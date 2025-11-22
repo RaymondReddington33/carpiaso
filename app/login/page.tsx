@@ -11,12 +11,27 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  
+  let supabase: ReturnType<typeof createClient> | null = null
+  try {
+    supabase = createClient()
+  } catch (error: any) {
+    console.error('[Login] Supabase client error:', error)
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
+
+    if (!supabase) {
+      setMessage({ 
+        type: "error", 
+        text: "Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables." 
+      })
+      setLoading(false)
+      return
+    }
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
