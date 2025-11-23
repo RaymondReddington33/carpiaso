@@ -41,22 +41,30 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // Protect routes except login and auth callback
-    if (!user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/login'
-      return NextResponse.redirect(redirectUrl)
+    // Always allow access to login and auth callback pages
+    if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth')) {
+      // If user is logged in and tries to access login, redirect to home
+      if (user && request.nextUrl.pathname === '/login') {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/'
+        redirectUrl.search = '' // Clean any error params
+        return NextResponse.redirect(redirectUrl)
+      }
+      // Otherwise, allow access to login/auth pages
+      return supabaseResponse
     }
 
-    // Redirect to home if user is logged in and tries to access login
-    if (user && request.nextUrl.pathname === '/login') {
+    // Protect all other routes - require authentication
+    if (!user) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/'
+      redirectUrl.pathname = '/login'
+      redirectUrl.search = '' // Clean any error params from protected routes
       return NextResponse.redirect(redirectUrl)
     }
   } catch (error) {
     // If auth check fails, allow request to proceed (useful for build time)
     console.warn('[Middleware] Auth check failed:', error)
+    // Don't redirect on error to avoid loops - let the page handle it
   }
 
   return supabaseResponse

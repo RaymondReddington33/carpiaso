@@ -62,24 +62,27 @@ export default function Page() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const stageIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Check for authentication errors in URL and redirect to login
+  // Check for authentication errors in URL and redirect to login (only once)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const error = params.get('error')
       
-      if (error === 'access_denied' || error === 'otp_expired') {
-        // Redirect to login with error message
+      // Only redirect if there's an error and we're not already on login
+      if (error && !window.location.pathname.startsWith('/login')) {
         const loginUrl = new URL('/login', window.location.origin)
-        loginUrl.searchParams.set('error', 'expired')
-        loginUrl.searchParams.set('message', 'Your magic link has expired. Please request a new one.')
-        router.push(loginUrl.toString())
-      } else if (error) {
-        // Other auth errors
-        const loginUrl = new URL('/login', window.location.origin)
-        loginUrl.searchParams.set('error', 'auth_failed')
-        loginUrl.searchParams.set('message', 'Authentication failed. Please try signing in again.')
-        router.push(loginUrl.toString())
+        
+        if (error === 'access_denied' || error === 'otp_expired') {
+          loginUrl.searchParams.set('error', 'expired')
+          loginUrl.searchParams.set('message', 'Your magic link has expired. Please request a new one.')
+        } else {
+          loginUrl.searchParams.set('error', 'auth_failed')
+          loginUrl.searchParams.set('message', 'Authentication failed. Please try signing in again.')
+        }
+        
+        // Clean current URL and redirect
+        window.history.replaceState({}, '', '/')
+        router.replace(loginUrl.toString())
       }
     }
   }, [router])
