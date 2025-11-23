@@ -23,7 +23,7 @@ import {
   FileText,
   Languages,
   Eye,
-  X,
+  X as XIcon,
 } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -115,7 +115,7 @@ function ImageModal({ src, alt, isOpen, onClose }: { src: string; alt: string; i
           className="absolute -top-8 sm:-top-10 right-0 sm:right-0 text-white hover:text-neutral-300 transition-colors z-10 p-2"
           aria-label="Close"
         >
-          <X className="h-5 w-5 sm:h-6 sm:w-6" />
+          <XIcon className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         <img
           src={src}

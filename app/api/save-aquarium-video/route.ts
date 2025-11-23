@@ -34,25 +34,27 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Save to Supabase
-      const supabase = await createClient()
-      const { error: dbError } = await supabase
-        .from("app_config")
-        .upsert({
-          key: "aquarium_video_url",
-          value: foundVideo.url,
-          description: foundVideo.description,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: "key"
-        })
+      // Try to save to Supabase (table might not exist yet)
+      try {
+        const supabase = await createClient()
+        const { error: dbError } = await supabase
+          .from("app_config")
+          .upsert({
+            key: "aquarium_video_url",
+            value: foundVideo.url,
+            description: foundVideo.description,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: "key"
+          })
 
-      if (dbError) {
-        console.error("[API] Error saving to Supabase:", dbError)
-        return NextResponse.json(
-          { error: "Failed to save video to database" },
-          { status: 500 }
-        )
+        if (dbError) {
+          console.warn("[API] Could not save to Supabase (table may not exist):", dbError.message)
+          // Don't fail the request if table doesn't exist - video will be fetched from Pexels
+        }
+      } catch (dbError: any) {
+        console.warn("[API] Supabase error (table may not exist):", dbError?.message || dbError)
+        // Continue without saving to database
       }
 
       return NextResponse.json({
@@ -62,25 +64,27 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Save to Supabase
-    const supabase = await createClient()
-    const { error: dbError } = await supabase
-      .from("app_config")
-      .upsert({
-        key: "aquarium_video_url",
-        value: video.url,
-        description: video.description,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: "key"
-      })
+    // Try to save to Supabase (table might not exist yet)
+    try {
+      const supabase = await createClient()
+      const { error: dbError } = await supabase
+        .from("app_config")
+        .upsert({
+          key: "aquarium_video_url",
+          value: video.url,
+          description: video.description,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: "key"
+        })
 
-    if (dbError) {
-      console.error("[API] Error saving to Supabase:", dbError)
-      return NextResponse.json(
-        { error: "Failed to save video to database" },
-        { status: 500 }
-      )
+      if (dbError) {
+        console.warn("[API] Could not save to Supabase (table may not exist):", dbError.message)
+        // Don't fail the request if table doesn't exist - video will be fetched from Pexels
+      }
+    } catch (dbError: any) {
+      console.warn("[API] Supabase error (table may not exist):", dbError?.message || dbError)
+      // Continue without saving to database
     }
 
     return NextResponse.json({

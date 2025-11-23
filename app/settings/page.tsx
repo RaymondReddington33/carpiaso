@@ -113,11 +113,13 @@ export default function SettingsPage() {
               const videoData = await saveVideoResponse.json()
               console.log("[Settings] Aquarium video saved to Supabase:", videoData.message)
             } else {
-              console.warn("[Settings] Could not save aquarium video to Supabase")
+              const errorData = await saveVideoResponse.json().catch(() => ({}))
+              // Don't show error to user - table might not exist yet
+              console.log("[Settings] Video will be fetched from Pexels (Supabase table may not exist yet)")
             }
           } catch (videoError) {
-            console.error("[Settings] Error saving aquarium video:", videoError)
-            // Don't fail the save operation if video save fails
+            // Silently handle - table might not exist yet
+            console.log("[Settings] Video will be fetched from Pexels if needed")
           }
         }
       } else {

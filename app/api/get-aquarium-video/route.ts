@@ -4,20 +4,25 @@ import { searchPexelsVideo } from "@/lib/pexels"
 
 export async function GET(req: NextRequest) {
   try {
-    // First, try to get video from Supabase
-    const supabase = await createClient()
-    const { data: config, error: dbError } = await supabase
-      .from("app_config")
-      .select("value, description")
-      .eq("key", "aquarium_video_url")
-      .single()
+    // First, try to get video from Supabase (table might not exist yet)
+    try {
+      const supabase = await createClient()
+      const { data: config, error: dbError } = await supabase
+        .from("app_config")
+        .select("value, description")
+        .eq("key", "aquarium_video_url")
+        .single()
 
-    if (!dbError && config && config.value) {
-      // Return video from database
-      return NextResponse.json({
-        url: config.value,
-        description: config.description || "Aquarium video from database",
-      })
+      if (!dbError && config && config.value) {
+        // Return video from database
+        return NextResponse.json({
+          url: config.value,
+          description: config.description || "Aquarium video from database",
+        })
+      }
+    } catch (dbError: any) {
+      // Table might not exist - continue to Pexels fallback
+      console.log("[API] Supabase table may not exist, using Pexels fallback")
     }
 
     // If not in database, try to fetch from Pexels (fallback)
