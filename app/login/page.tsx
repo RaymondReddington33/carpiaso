@@ -34,11 +34,23 @@ export default function LoginPage() {
     }
 
     try {
-      // Always use current origin to ensure correct domain in production
-      // Supabase will validate this against the configured redirect URLs
-      const redirectUrl = `${window.location.origin}/auth/callback`
+      // Determine the correct redirect URL
+      // Priority: 1. Environment variable, 2. Current origin
+      // This ensures production uses the correct domain even if Supabase Site URL is misconfigured
+      let baseUrl = window.location.origin
+      
+      // Check if we're in production and should use a specific URL
+      // In production (carpiaso.com), always use the production URL
+      if (typeof window !== 'undefined' && window.location.hostname === 'carpiaso.com') {
+        baseUrl = 'https://carpiaso.com'
+      } else if (typeof window !== 'undefined' && window.location.hostname === 'www.carpiaso.com') {
+        baseUrl = 'https://www.carpiaso.com'
+      }
+      
+      const redirectUrl = `${baseUrl}/auth/callback`
       
       console.log('[Login] Using redirect URL:', redirectUrl)
+      console.log('[Login] Current hostname:', window.location.hostname)
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
