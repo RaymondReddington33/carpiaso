@@ -12,6 +12,21 @@ export default function LoginPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const router = useRouter()
+
+  // Check for error messages in URL params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const error = params.get('error')
+      const errorMessage = params.get('message')
+      
+      if (error && errorMessage) {
+        setMessage({ type: "error", text: errorMessage })
+        // Clean URL
+        window.history.replaceState({}, '', '/login')
+      }
+    }
+  }, [])
   
   let supabase: ReturnType<typeof createClient> | null = null
   try {

@@ -61,6 +61,28 @@ export default function Page() {
   const router = useRouter()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const stageIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Check for authentication errors in URL and redirect to login
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const error = params.get('error')
+      
+      if (error === 'access_denied' || error === 'otp_expired') {
+        // Redirect to login with error message
+        const loginUrl = new URL('/login', window.location.origin)
+        loginUrl.searchParams.set('error', 'expired')
+        loginUrl.searchParams.set('message', 'Your magic link has expired. Please request a new one.')
+        router.push(loginUrl.toString())
+      } else if (error) {
+        // Other auth errors
+        const loginUrl = new URL('/login', window.location.origin)
+        loginUrl.searchParams.set('error', 'auth_failed')
+        loginUrl.searchParams.set('message', 'Authentication failed. Please try signing in again.')
+        router.push(loginUrl.toString())
+      }
+    }
+  }, [router])
   
   const { object, submit, isLoading, error } = useObject({
     api: "/api/generate-aso-report",
