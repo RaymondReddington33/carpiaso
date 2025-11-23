@@ -34,10 +34,11 @@ export default function LoginPage() {
     }
 
     try {
-      // Use environment variable if available, otherwise use current origin
-      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
-        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-        : `${window.location.origin}/auth/callback`
+      // Always use current origin to ensure correct domain in production
+      // Supabase will validate this against the configured redirect URLs
+      const redirectUrl = `${window.location.origin}/auth/callback`
+      
+      console.log('[Login] Using redirect URL:', redirectUrl)
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
