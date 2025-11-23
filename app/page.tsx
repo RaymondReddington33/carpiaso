@@ -294,31 +294,31 @@ export default function Page() {
     <div className="min-h-screen bg-black">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <AnimatePresence mode="wait">
           {!hasStarted ? (
-            <motion.div key="form" exit={{ opacity: 0, y: -20 }} className="py-12">
+            <motion.div key="form" exit={{ opacity: 0, y: -20 }} className="py-6 sm:py-12">
               <ASOForm onSubmit={handleSubmit} isLoading={false} />
             </motion.div>
           ) : (
             <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto">
               {/* Status Bar */}
-              <div className="mb-8 flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
-                <div className="flex items-center gap-3">
+              <div className="mb-6 sm:mb-8 flex items-center justify-between rounded-lg border border-border bg-card px-3 sm:px-4 py-2 sm:py-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                   {(isLoading || isEnriching) ? (
-                    <div className="flex h-2 w-2">
+                    <div className="flex h-2 w-2 flex-shrink-0">
                       <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </div>
                   ) : (
-                    <div className={`h-2 w-2 rounded-full ${getStatusColor()}`} />
+                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${getStatusColor()}`} />
                   )}
-                  <span className="text-sm font-medium text-white">{getStatusText()}</span>
+                  <span className="text-xs sm:text-sm font-medium text-white truncate">{getStatusText()}</span>
                 </div>
                 {!isLoading && !isEnriching && (
                   <button
                     onClick={() => window.location.reload()}
-                    className="text-xs text-muted-foreground hover:text-white"
+                    className="text-xs text-muted-foreground hover:text-white flex-shrink-0 ml-2"
                   >
                     New Report
                   </button>
@@ -327,15 +327,15 @@ export default function Page() {
 
               {/* Progress Bar */}
               {(isLoading || isEnriching || (object && !enrichedReport)) && (
-                <div className="mb-8 space-y-6 rounded-xl border border-border bg-card p-8">
+                <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6 md:p-8">
                   {/* Status Message */}
                   <div className="text-center space-y-2">
-                    <h3 className="text-xl font-semibold text-white">
+                    <h3 className="text-lg sm:text-xl font-semibold text-white px-2">
                       {isEnriching 
                         ? "Enriching Report with Visual Data"
                         : GENERATION_STAGES[currentStage]?.message || "Generating Report..."}
                     </h3>
-                    <p className="text-sm text-neutral-400 leading-relaxed max-w-2xl mx-auto">
+                    <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-2xl mx-auto px-2">
                       {isEnriching 
                         ? "Adding contextual images from Pexels and finalizing local data integration"
                         : GENERATION_STAGES[currentStage]?.description || "Processing your request..."}
@@ -343,10 +343,10 @@ export default function Page() {
                   </div>
 
                   {/* Progress Bar with Countdown */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-green-400" />
+                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
                         <span className="text-neutral-300">
                           Elapsed: <span className="font-mono font-semibold text-white">{formatTime(elapsedTime)}</span>
                         </span>

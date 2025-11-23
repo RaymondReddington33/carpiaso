@@ -81,19 +81,19 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="rounded-xl border border-border bg-card p-8 shadow-lg">
+        <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-lg">
           {/* Logo and Branding */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-black">
-                <Fish className="h-7 w-7 fill-current" />
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-white text-black">
+                <Fish className="h-6 w-6 sm:h-7 sm:w-7 fill-current" />
               </div>
-              <h1 className="text-3xl font-bold text-white">Carpiaso</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Carpiaso</h1>
             </div>
-            <h2 className="text-xl font-semibold text-white mb-3">
+            <h2 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">
               Strategic ASO Report Generator
             </h2>
-            <p className="text-sm text-neutral-400 leading-relaxed">
+            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed px-2 sm:px-0">
               Generate professional App Store Optimization reports with AI-powered insights, 
               competitor analysis, and data-driven recommendations to maximize your app's conversion rate.
             </p>

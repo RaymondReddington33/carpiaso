@@ -115,22 +115,22 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-black">
       <Header />
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
+          className="space-y-4 sm:space-y-6"
         >
           <div>
-            <h1 className="text-3xl font-medium tracking-tight text-white mb-2">Settings</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white mb-2">Settings</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Configure your OpenAI API key and other preferences.
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* OpenAI API Key */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
@@ -227,7 +227,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Pexels API Key */}
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">

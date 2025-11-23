@@ -135,10 +135,10 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-medium tracking-tight text-white mb-2">New ASO Report</h1>
-        <p className="text-muted-foreground">
+    <div className="mx-auto w-full max-w-3xl px-4 sm:px-0">
+      <div className="mb-6 sm:mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white mb-2">New ASO Report</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-4 sm:px-0">
           Generate strategic insights for your app based on local culture and competitors.
         </p>
       </div>
@@ -147,7 +147,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm"
+        className="space-y-4 sm:space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm overflow-hidden"
       >
         {/* Platform selector with checkboxes for multiple selection */}
         <div className="space-y-3">
@@ -156,7 +156,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
             name="platforms"
             control={control}
             render={({ field }) => (
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox
                     checked={field.value?.includes("ios")}
@@ -248,7 +248,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</label>
             <Controller
@@ -391,7 +391,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
             return (
               <div key={field.id} className="space-y-2 p-3 rounded-lg border border-border bg-background/50">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 relative">
+                  <div className="flex-1 relative min-w-0">
                     <input
                       {...register(`competitors.${index}.name`)}
                       readOnly
@@ -408,7 +408,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="text-muted-foreground hover:text-red-400 transition-colors p-1"
+                    className="text-muted-foreground hover:text-red-400 transition-colors p-1 flex-shrink-0"
                   >
                     <X className="h-4 w-4" />
                   </button>

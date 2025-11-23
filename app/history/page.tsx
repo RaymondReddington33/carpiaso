@@ -131,10 +131,10 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-black">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-medium tracking-tight text-white mb-2">History</h1>
-          <p className="text-muted-foreground">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white mb-2">History</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             View, export, and manage your generated ASO reports.
           </p>
         </div>
@@ -157,25 +157,27 @@ export default function HistoryPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg border border-border bg-card p-4 flex items-center justify-between"
+                className="rounded-lg border border-border bg-card p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2"
               >
                 <span className="text-sm text-white">
                   {selectedIds.size} report(s) selected
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleBulkExport}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-white transition-colors"
+                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-white transition-colors"
                   >
                     <Download className="h-4 w-4" />
-                    Export Selected
+                    <span className="hidden sm:inline">Export Selected</span>
+                    <span className="sm:hidden">Export</span>
                   </button>
                   <button
                     onClick={handleBulkDelete}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-sm text-red-400 transition-colors"
+                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-sm text-red-400 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Delete Selected
+                    <span className="hidden sm:inline">Delete Selected</span>
+                    <span className="sm:hidden">Delete</span>
                   </button>
                 </div>
               </motion.div>
@@ -196,72 +198,72 @@ export default function HistoryPage() {
                       key={item.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="rounded-lg border border-border bg-card p-4 hover:border-white/20 transition-colors"
+                      className="rounded-lg border border-border bg-card p-3 sm:p-4 hover:border-white/20 transition-colors"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2 sm:gap-3">
                         <button
                           onClick={() => toggleSelect(item.id)}
-                          className="mt-1 text-muted-foreground hover:text-white transition-colors"
+                          className="mt-1 text-muted-foreground hover:text-white transition-colors flex-shrink-0"
                         >
                           {selectedIds.has(item.id) ? (
-                            <CheckSquare className="h-5 w-5 text-blue-400" />
+                            <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                           ) : (
-                            <Square className="h-5 w-5" />
+                            <Square className="h-4 w-4 sm:h-5 sm:w-5" />
                           )}
                         </button>
 
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-medium text-white">{item.appName}</h3>
-                                <span className="text-xs text-muted-foreground">
+                        <div className="flex-1 space-y-2 min-w-0">
+                          <div className="flex items-start justify-between gap-2 sm:gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                                <h3 className="font-medium text-white text-sm sm:text-base truncate">{item.appName}</h3>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
                                   {format(new Date(item.timestamp), "MMM d, yyyy HH:mm")}
                                 </span>
                               </div>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
+                              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                                 {item.summary || "ASO Report"}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Globe className="h-3 w-3" />
-                              {item.country}
+                              <span className="truncate">{item.country}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Smartphone className="h-3 w-3" />
-                              {item.platforms.join(", ")}
+                              <span className="truncate">{item.platforms.join(", ")}</span>
                             </div>
-                            <span>{item.category}</span>
+                            <span className="truncate">{item.category}</span>
                             {item.competitors.length > 0 && (
-                              <span>{item.competitors.length} competitor(s)</span>
+                              <span className="truncate">{item.competitors.length} competitor(s)</span>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                           <button
                             onClick={() => setPreviewId(previewId === item.id ? null : item.id)}
-                            className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                            className="p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
                             title="Preview"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                           <button
                             onClick={() => handleExport(item.id)}
-                            className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                            className="p-1.5 sm:p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
                             title="Export"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
+                            className="p-1.5 sm:p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
                             title="Delete"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                         </div>
                       </div>
@@ -283,18 +285,19 @@ export default function HistoryPage() {
               className="fixed inset-0 bg-black/80 z-50 overflow-y-auto"
               onClick={() => setPreviewId(null)}
             >
-              <div className="min-h-screen px-4 py-8">
+              <div className="min-h-screen px-2 sm:px-4 py-4 sm:py-8">
                 <div className="max-w-6xl mx-auto">
-                  <div className="bg-card rounded-xl border border-border p-6 mb-4">
+                  <div className="bg-card rounded-xl border border-border p-4 sm:p-6 mb-4">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-medium text-white">
+                      <h2 className="text-lg sm:text-xl font-medium text-white truncate pr-2">
                         Preview: {previewItem.appName}
                       </h2>
                       <button
                         onClick={() => setPreviewId(null)}
-                        className="text-muted-foreground hover:text-white"
+                        className="text-muted-foreground hover:text-white flex-shrink-0 p-1"
+                        aria-label="Close"
                       >
-                        ✕
+                        <X className="h-5 w-5" />
                       </button>
                     </div>
                     <ASOReportView data={previewItem.report} />

@@ -106,20 +106,21 @@ function ImageModal({ src, alt, isOpen, onClose }: { src: string; alt: string; i
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4"
       onClick={onClose}
     >
-      <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="relative max-w-4xl max-h-[95vh] sm:max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-neutral-300 transition-colors z-10"
+          className="absolute -top-8 sm:-top-10 right-0 sm:right-0 text-white hover:text-neutral-300 transition-colors z-10 p-2"
+          aria-label="Close"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         <img
           src={src}
           alt={alt}
-          className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+          className="w-full h-auto max-h-[95vh] sm:max-h-[90vh] object-contain rounded-lg"
         />
       </div>
     </div>
@@ -264,26 +265,26 @@ export function ASOReportView({ data }: ASOReportViewProps) {
   if (!data) return null
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-6 sm:space-y-8 md:space-y-12 pb-12 sm:pb-16 md:pb-20 px-2 sm:px-0">
       {/* Visual Summary */}
       {data.visualSummary && (
-        <section className="rounded-xl border border-border bg-gradient-to-br from-card to-card/50 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Palette className="h-5 w-5 text-purple-400" />
-            <h2 className="text-xl font-semibold text-white">Strategic Visual Summary</h2>
+        <section className="rounded-xl border border-border bg-gradient-to-br from-card to-card/50 p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
+            <h2 className="text-lg sm:text-xl font-semibold text-white">Strategic Visual Summary</h2>
           </div>
-          <p className="text-sm text-neutral-300 leading-relaxed">{data.visualSummary}</p>
+          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">{data.visualSummary}</p>
         </section>
       )}
 
       {/* App Visual Assets */}
       {data.appVisualAssets && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <ImageIcon className="h-4 w-4 text-blue-400" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400" />
             App Visual Assets
           </h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {isValidImageUrl(data.appVisualAssets.iconUrl) && (
               <div className="rounded-xl border border-border bg-card p-4">
                 <h3 className="text-xs font-medium text-white mb-3">Icon</h3>
@@ -306,7 +307,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
             {data.appVisualAssets.screenshots && data.appVisualAssets.screenshots.length > 0 && (
               <div className={`rounded-xl border border-border bg-card p-4 ${data.appVisualAssets.iconUrl ? "md:col-span-2" : "md:col-span-3"}`}>
                 <h3 className="text-xs font-medium text-white mb-3">Screenshots</h3>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {data.appVisualAssets.screenshots
                     .filter((url) => isValidImageUrl(url))
                     .slice(0, 8)
@@ -333,8 +334,8 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* App Color Palette */}
       {data.appColorPalette && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <Palette className="h-4 w-4 text-purple-400" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-400" />
             Main Color Palette
           </h2>
           <ColorPaletteDisplay palette={data.appColorPalette} />
@@ -343,20 +344,20 @@ export function ASOReportView({ data }: ASOReportViewProps) {
 
       {/* 1. Top Section: Hypotheses */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-white flex items-center gap-2">
-            <Lightbulb className="h-4 w-4 text-yellow-500" />
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
+            <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
             Strategic A/B Testing Hypotheses
           </h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {data.hypothesis?.map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="group rounded-xl border border-border bg-card p-5 hover:border-neutral-700 transition-colors"
+              className="group rounded-xl border border-border bg-card p-4 sm:p-5 hover:border-neutral-700 transition-colors"
             >
               <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
                 <span className="text-sm font-bold">H{i + 1}</span>
@@ -393,11 +394,11 @@ export function ASOReportView({ data }: ASOReportViewProps) {
 
       {/* 2. Cultural Insights Grid */}
       <section>
-        <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-pink-500" />
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
           Cultural Context and Local Data
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <InsightCard
             title="Urban Mobility"
             content={data.culturalInsights?.urbanMobility}
@@ -458,7 +459,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                   <FileText className="h-4 w-4 text-yellow-400" />
                   Currency and Local Format
                 </h3>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {data.culturalInsights.localMarketDetails.currency && (
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Currency</p>
@@ -488,7 +489,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                   <MapPin className="h-4 w-4 text-blue-400" />
                   Specific Cities
                 </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.culturalInsights.localMarketDetails.specificCities.map((city: any, i: number) => (
                     <motion.div
                       key={i}
@@ -548,7 +549,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                   <Languages className="h-4 w-4 text-pink-400" />
                   Language Characteristics
                 </h3>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {data.culturalInsights.localMarketDetails.languageCharacteristics.formalForms && data.culturalInsights.localMarketDetails.languageCharacteristics.formalForms.length > 0 && (
                     <div>
                       <p className="text-xs text-muted-foreground mb-2">Formal Forms</p>
@@ -614,7 +615,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                   <Camera className="h-4 w-4 text-green-400" />
                   Specific Local Objects
                 </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.culturalInsights.localMarketDetails.localObjects.map((obj: any, i: number) => (
                     <motion.div
                       key={i}
@@ -709,18 +710,18 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* 3. Competitor Analysis */}
       {data.competitorAnalysis && data.competitorAnalysis.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <Target className="h-4 w-4 text-red-500" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
             Competitor Analysis
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {data.competitorAnalysis.map((comp, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl border border-border bg-card p-6"
+                  className="rounded-xl border border-border bg-card p-4 sm:p-6"
             >
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                 <div className="flex-1">
@@ -796,9 +797,9 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 </div>
               )}
 
-              <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                <div>
-                  <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Visual Patterns</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                    <div>
+                      <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-2">Visual Patterns</h4>
                   <ul className="space-y-1">
                     {comp.visualPatterns?.map((vp, k) => (
                       <li key={k} className="text-sm text-muted-foreground flex items-center gap-2">
@@ -822,12 +823,12 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* 4. Recommendations */}
       {data.recommendations && data.recommendations.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-500" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
             Visual and Strategic Recommendations
           </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {data.recommendations.map((rec, i) => (
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+                {data.recommendations.map((rec, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -835,10 +836,10 @@ export function ASOReportView({ data }: ASOReportViewProps) {
               transition={{ delay: i * 0.1 }}
               className="overflow-hidden rounded-xl border border-border bg-card"
             >
-              <div className="border-b border-border bg-neutral-900/50 p-4">
-                <h3 className="font-medium text-white">{rec.title}</h3>
+              <div className="border-b border-border bg-neutral-900/50 p-3 sm:p-4">
+                <h3 className="font-medium text-white text-sm sm:text-base">{rec.title}</h3>
               </div>
-              <div className="p-5 space-y-4">
+              <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{rec.insight}</p>
                 </div>
@@ -951,18 +952,18 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* 5. Keywords */}
       {data.keywords && data.keywords.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <Search className="h-4 w-4 text-blue-500" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
             Keyword Strategy
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
             {data.keywords.map((kw, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-border bg-card p-5"
+                className="rounded-xl border border-border bg-card p-4 sm:p-5"
               >
                 <h3 className="font-medium text-white mb-3">{kw.category}</h3>
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -1005,11 +1006,11 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* 6. Screenshot Proposals */}
       {data.screenshotProposals && data.screenshotProposals.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <Camera className="h-4 w-4 text-purple-400" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-400" />
             Detailed Screenshot Proposals
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {data.screenshotProposals.map((proposal, i) => (
               <ScreenshotProposalCard key={i} proposal={proposal} index={i} />
             ))}
@@ -1020,18 +1021,18 @@ export function ASOReportView({ data }: ASOReportViewProps) {
       {/* 7. Message Clusters */}
       {data.messageClusters && data.messageClusters.length > 0 && (
         <section>
-          <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-green-400" />
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
             Local Message Clusters
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
             {data.messageClusters.map((cluster, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-border bg-card p-5"
+                className="rounded-xl border border-border bg-card p-4 sm:p-5"
               >
                 <h3 className="font-medium text-white mb-3">{cluster.name}</h3>
                 {cluster.examples && cluster.examples.length > 0 && (
@@ -1082,8 +1083,8 @@ export function ASOReportView({ data }: ASOReportViewProps) {
             <Languages className="h-4 w-4 text-yellow-400" />
             Autochthonous Local Terminology
           </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {data.localTerminology.map((term, i) => (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {data.localTerminology.map((term, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
@@ -1121,7 +1122,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-border bg-card p-5"
+                className="rounded-xl border border-border bg-card p-4 sm:p-5"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="px-2 py-1 rounded bg-pink-500/10 text-xs text-pink-400 border border-pink-500/20">
@@ -1200,7 +1201,7 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-border bg-card p-6"
+                  className="rounded-xl border border-border bg-card p-4 sm:p-6"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1211,9 +1212,9 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                     Test {i + 1}
                   </span>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-300 mb-2">Variants</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-neutral-300 mb-2">Variants</p>
                     <div className="space-y-1">
                       {experiment.variants.map((variant, j) => (
                         <span key={j} className="block text-xs text-neutral-400">
@@ -1256,7 +1257,7 @@ function ColorPaletteDisplay({ palette }: { palette: any }) {
       {palette.description && (
         <p className="text-xs text-muted-foreground mb-3">{palette.description}</p>
       )}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
         {palette.colors?.map((color: any, idx: number) => (
           <div key={idx} className="space-y-2">
             <div
@@ -1357,7 +1358,7 @@ function ScreenshotProposalCard({ proposal, index }: { proposal: any; index: num
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="rounded-xl border border-border bg-card p-6"
+                  className="rounded-xl border border-border bg-card p-4 sm:p-6"
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
@@ -1517,7 +1518,7 @@ function BenchmarkComparisonCard({ benchmark }: { benchmark: any }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-6"
+                  className="rounded-xl border border-border bg-card p-4 sm:p-6"
     >
       <div className="mb-4">
         <h3 className="text-md font-semibold text-white mb-2 capitalize">{benchmark.type} Comparison</h3>
@@ -1525,8 +1526,8 @@ function BenchmarkComparisonCard({ benchmark }: { benchmark: any }) {
       </div>
 
       {(benchmark.appAssets || benchmark.competitorAssets || isValidImageUrl(benchmark.pexelsImageUrl)) && (
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          {benchmark.appAssets?.iconUrl && isValidImageUrl(benchmark.appAssets.iconUrl) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            {benchmark.appAssets?.iconUrl && isValidImageUrl(benchmark.appAssets.iconUrl) && (
             <div className="flex flex-col items-center text-center">
               <p className="text-xs text-neutral-400 mb-2">Your App</p>
               <IconWithView
@@ -1600,7 +1601,7 @@ function CompetitorInsightCard({ insight }: { insight: any }) {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="rounded-xl border border-border bg-card p-6"
+                  className="rounded-xl border border-border bg-card p-4 sm:p-6"
     >
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -1651,8 +1652,8 @@ function CompetitorInsightCard({ insight }: { insight: any }) {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-border">
-        {insight.gaps && insight.gaps.length > 0 && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+            {insight.gaps && insight.gaps.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wider">Gaps</p>
             <ul className="space-y-1">
