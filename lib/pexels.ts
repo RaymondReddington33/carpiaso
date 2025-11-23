@@ -90,3 +90,64 @@ export function generatePexelsQuery(fact: string, country: string, context?: str
   return queryParts.slice(0, 5).join(" ").trim()
 }
 
+export interface PexelsVideo {
+  url: string
+  description: string
+  photographer?: string
+}
+
+/**
+ * Search for videos on Pexels based on a query
+ */
+export async function searchPexelsVideo(
+  query: string,
+  apiKey: string
+): Promise<PexelsVideo | null> {
+  try {
+    if (!apiKey || !query) {
+      console.warn("[Pexels] Missing API key or query for video search")
+      return null
+    }
+
+    const searchQuery = encodeURIComponent(query)
+    const response = await fetch(
+      `https://api.pexels.com/videos/search?query=${searchQuery}&per_page=1&orientation=landscape`,
+      {
+        headers: {
+          Authorization: apiKey,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      console.error("[Pexels] Video API error:", response.status, response.statusText)
+      return null
+    }
+
+    const data = await response.json()
+
+    if (data.videos && data.videos.length > 0) {
+      const video = data.videos[0]
+      // Get the best quality video file (prefer HD, fallback to SD)
+      const videoFile = video.video_files?.find((f: any) => f.quality === 'hd') 
+        || video.video_files?.find((f: any) => f.quality === 'sd')
+        || video.video_files?.[0]
+      
+      if (videoFile) {
+        return {
+          url: videoFile.link,
+          description: video.user?.name
+            ? `Video by ${video.user.name}: ${query}`
+            : `Video: ${query}`,
+          photographer: video.user?.name,
+        }
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error("[Pexels] Error fetching video:", error)
+    return null
+  }
+}
+

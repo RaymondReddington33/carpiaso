@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
 import { Loader2, Mail, Fish } from "lucide-react"
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const router = useRouter()
   
   let supabase: ReturnType<typeof createClient> | null = null
@@ -18,6 +19,31 @@ export default function LoginPage() {
   } catch (error: any) {
     console.error('[Login] Supabase client error:', error)
   }
+
+  // Fetch aquarium video on mount
+  useEffect(() => {
+    const fetchAquariumVideo = async () => {
+      try {
+        const pexelsApiKey = localStorage.getItem("pexels_api_key") || process.env.NEXT_PUBLIC_PEXELS_API_KEY
+        if (!pexelsApiKey) {
+          console.log("[Login] No Pexels API key found, skipping video")
+          return
+        }
+
+        const response = await fetch(`/api/get-aquarium-video?apiKey=${encodeURIComponent(pexelsApiKey)}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.url) {
+            setVideoUrl(data.url)
+          }
+        }
+      } catch (error) {
+        console.error("[Login] Error fetching aquarium video:", error)
+      }
+    }
+
+    fetchAquariumVideo()
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,13 +101,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-black flex items-center justify-center p-4 overflow-hidden">
+      {/* Aquarium Video Background */}
+      {videoUrl && (
+        <div className="absolute inset-0 z-0 opacity-20">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          {/* Overlay for better contrast */}
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
+      )}
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="relative z-10 w-full max-w-md"
       >
-        <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-lg">
+        <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm p-6 sm:p-8 shadow-lg">
           {/* Logo and Branding */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6">
