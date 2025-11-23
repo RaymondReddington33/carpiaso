@@ -91,14 +91,40 @@ export default function SettingsPage() {
     try {
       // Save to localStorage
       localStorage.setItem("openai_api_key", openaiKey.trim())
-      // Always save Pexels key if provided, or remove it if empty
+      
+      // Save Pexels key and fetch/save aquarium video if key is new or changed
+      const previousPexelsKey = localStorage.getItem("pexels_api_key")
+      const isNewPexelsKey = pexelsKey.trim() && pexelsKey.trim() !== previousPexelsKey
+      
       if (pexelsKey.trim()) {
         localStorage.setItem("pexels_api_key", pexelsKey.trim())
         console.log("[Settings] Pexels API key saved to localStorage")
+        
+        // If it's a new key, fetch and save aquarium video to Supabase
+        if (isNewPexelsKey) {
+          try {
+            const saveVideoResponse = await fetch("/api/save-aquarium-video", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pexelsApiKey: pexelsKey.trim() }),
+            })
+            
+            if (saveVideoResponse.ok) {
+              const videoData = await saveVideoResponse.json()
+              console.log("[Settings] Aquarium video saved to Supabase:", videoData.message)
+            } else {
+              console.warn("[Settings] Could not save aquarium video to Supabase")
+            }
+          } catch (videoError) {
+            console.error("[Settings] Error saving aquarium video:", videoError)
+            // Don't fail the save operation if video save fails
+          }
+        }
       } else {
         localStorage.removeItem("pexels_api_key")
         console.log("[Settings] Pexels API key removed from localStorage")
       }
+      
       setSaved(true)
       setError("")
       

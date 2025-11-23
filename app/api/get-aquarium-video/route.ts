@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 import { searchPexelsVideo } from "@/lib/pexels"
 
 export async function GET(req: NextRequest) {
   try {
-    // Get Pexels API key from query params or environment
+    // First, try to get video from Supabase
+    const supabase = await createClient()
+    const { data: config, error: dbError } = await supabase
+      .from("app_config")
+      .select("value, description")
+      .eq("key", "aquarium_video_url")
+      .single()
+
+    if (!dbError && config && config.value) {
+      // Return video from database
+      return NextResponse.json({
+        url: config.value,
+        description: config.description || "Aquarium video from database",
+      })
+    }
+
+    // If not in database, try to fetch from Pexels (fallback)
     const apiKey = req.nextUrl.searchParams.get("apiKey") || process.env.PEXELS_API_KEY
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Pexels API key not provided" },
-        { status: 400 }
+        { error: "No video found in database and Pexels API key not provided" },
+        { status: 404 }
       )
     }
 

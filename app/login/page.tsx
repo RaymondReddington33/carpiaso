@@ -20,21 +20,29 @@ export default function LoginPage() {
     console.error('[Login] Supabase client error:', error)
   }
 
-  // Fetch aquarium video on mount
+  // Fetch aquarium video on mount (from Supabase)
   useEffect(() => {
     const fetchAquariumVideo = async () => {
       try {
-        const pexelsApiKey = localStorage.getItem("pexels_api_key") || process.env.NEXT_PUBLIC_PEXELS_API_KEY
-        if (!pexelsApiKey) {
-          console.log("[Login] No Pexels API key found, skipping video")
-          return
-        }
-
-        const response = await fetch(`/api/get-aquarium-video?apiKey=${encodeURIComponent(pexelsApiKey)}`)
+        // Try to get video from Supabase first (no API key needed)
+        const response = await fetch("/api/get-aquarium-video")
         if (response.ok) {
           const data = await response.json()
           if (data.url) {
             setVideoUrl(data.url)
+            return
+          }
+        }
+
+        // Fallback: if not in Supabase, try with Pexels API key
+        const pexelsApiKey = localStorage.getItem("pexels_api_key")
+        if (pexelsApiKey) {
+          const fallbackResponse = await fetch(`/api/get-aquarium-video?apiKey=${encodeURIComponent(pexelsApiKey)}`)
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json()
+            if (fallbackData.url) {
+              setVideoUrl(fallbackData.url)
+            }
           }
         }
       } catch (error) {
