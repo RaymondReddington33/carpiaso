@@ -6,15 +6,18 @@ import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { asoInputSchema, type ASOInput } from "@/lib/schemas"
 import { APP_STORE_CATEGORIES, GOOGLE_PLAY_CATEGORIES, COUNTRIES, LANGUAGES } from "@/lib/constants"
-import { Loader2, Search, Globe, Smartphone, Layers, LinkIcon, Plus, X, Sparkles } from "lucide-react"
+import { Loader2, Search, Globe, Smartphone, Layers, LinkIcon, Plus, X, Sparkles, Save, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useState, useEffect } from "react"
+import { type AppProfile, saveAppProfile, calculateHealthScore } from "@/lib/app-profile"
 
 interface ASOFormProps {
   onSubmit: (data: ASOInput) => void
   isLoading: boolean
+  initialProfile?: AppProfile | null
+  onProfileSaved?: (profileId: string) => void
 }
 
 const extractIdFromUrl = (url: string, platform: "ios" | "android") => {
@@ -39,10 +42,18 @@ const extractIdFromUrl = (url: string, platform: "ios" | "android") => {
   }
 }
 
-export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
+export function ASOForm({ onSubmit, isLoading, initialProfile, onProfileSaved }: ASOFormProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<("ios" | "android")[]>(["ios"])
-  const [keywordInput, setKeywordInput] = useState("") // State for keyword input
+  const [keywordInput, setKeywordInput] = useState("")
   const [competitorNames, setCompetitorNames] = useState<string[]>([])
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [isSuggesting, setIsSuggesting] = useState(false)
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    keywords: Array<{ keyword: string; intent?: string; searchVolume?: string; competition?: string }>
+    competitors: Array<{ name: string; url?: string; reason?: string }>
+    markets: Array<{ country: string; language: string; opportunity?: string }>
+  } | null>(null)
+  const [savedProfileId, setSavedProfileId] = useState<string | null>(initialProfile?.id || null)
 
   const {
     register,
@@ -53,11 +64,20 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
     formState: { errors },
   } = useForm<ASOInput>({
     resolver: zodResolver(asoInputSchema),
-    defaultValues: {
+    defaultValues: initialProfile ? {
+      platforms: initialProfile.platform,
+      appUrls: initialProfile.appStoreURL,
+      appName: initialProfile.name,
+      category: initialProfile.category,
+      language: initialProfile.language,
+      country: initialProfile.targetMarket,
+      keywords: initialProfile.keywords,
+      competitors: initialProfile.competitors || [],
+    } : {
       platforms: ["ios"],
       appUrls: { ios: "", android: "" },
       competitors: [],
-      keywords: [], // Default keywords
+      keywords: [],
     },
   })
 
@@ -75,6 +95,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
   const appAndroidUrl = watch("appUrls.android")
   const appName = watch("appName")
 
+  // Auto-extract app name from URL
   useEffect(() => {
     let id = ""
     if (showIos && appIosUrl) {
@@ -86,7 +107,115 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
     if (id && id !== appName) {
       setValue("appName", id)
     }
-  }, [appIosUrl, appAndroidUrl, showIos, showAndroid, setValue, appName]) // Removed appName from dependency to allow overwrite
+  }, [appIosUrl, appAndroidUrl, showIos, showAndroid, setValue, appName])
+
+  // Auto-extract app data when URL is entered
+  useEffect(() => {
+    const extractAppData = async () => {
+      const url = showIos && appIosUrl ? appIosUrl : showAndroid && appAndroidUrl ? appAndroidUrl : null
+      const platform = showIos && appIosUrl ? "ios" : showAndroid && appAndroidUrl ? "android" : null
+      
+      if (!url || !platform || isExtracting) return
+      
+      // Check if URL is valid
+      try {
+        new URL(url)
+      } catch {
+        return
+      }
+
+      setIsExtracting(true)
+      try {
+        const response = await fetch("/api/extract-app-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, platform }),
+        })
+
+        if (response.ok) {
+          const { data } = await response.json()
+          
+          // Auto-fill form with extracted data
+          if (data.title && !appName) {
+            setValue("appName", data.title)
+          }
+          if (data.category && !watch("category")) {
+            setValue("category", data.category)
+          }
+          
+          // Store metadata for later use
+          if (data.icon || data.rating || data.reviews || data.description) {
+            // We'll use this when saving the profile
+          }
+
+          // Generate AI suggestions
+          if (data.title && data.category) {
+            generateSuggestions(data)
+          }
+        }
+      } catch (error) {
+        console.error("[ASOForm] Error extracting app data:", error)
+      } finally {
+        setIsExtracting(false)
+      }
+    }
+
+    // Debounce extraction
+    const timeoutId = setTimeout(extractAppData, 1000)
+    return () => clearTimeout(timeoutId)
+  }, [appIosUrl, appAndroidUrl, showIos, showAndroid, appName, isExtracting, setValue, watch])
+
+  // Generate AI suggestions
+  const generateSuggestions = async (appData: any) => {
+    if (isSuggesting) return
+    
+    setIsSuggesting(true)
+    try {
+      const apiKey = localStorage.getItem("openai_api_key")
+      const response = await fetch("/api/auto-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          appData: {
+            title: appData.title || appName,
+            category: appData.category || watch("category"),
+            description: appData.description || "",
+            developer: appData.developer || "",
+            rating: appData.rating,
+            reviews: appData.reviews,
+          },
+          apiKey,
+        }),
+      })
+
+      if (response.ok) {
+        const { suggestions } = await response.json()
+        setAiSuggestions({
+          keywords: suggestions.aiKeywords || [],
+          competitors: suggestions.aiCompetitors || [],
+          markets: suggestions.aiMarkets || [],
+        })
+      }
+    } catch (error) {
+      console.error("[ASOForm] Error generating suggestions:", error)
+    } finally {
+      setIsSuggesting(false)
+    }
+  }
+
+  // Load initial profile data
+  useEffect(() => {
+    if (initialProfile) {
+      setSavedProfileId(initialProfile.id)
+      if (initialProfile.autoSuggestions) {
+        setAiSuggestions({
+          keywords: initialProfile.autoSuggestions.aiKeywords || [],
+          competitors: initialProfile.autoSuggestions.aiCompetitors || [],
+          markets: initialProfile.autoSuggestions.aiMarkets || [],
+        })
+      }
+    }
+  }, [initialProfile])
 
 
   const handleAddKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -429,6 +558,161 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
               Add competitors to analyze their strategies and positioning.
             </p>
           )}
+        </div>
+
+        {/* AI Suggestions Section */}
+        {aiSuggestions && (aiSuggestions.keywords.length > 0 || aiSuggestions.competitors.length > 0 || aiSuggestions.markets.length > 0) && (
+          <div className="rounded-lg border border-border bg-neutral-900/50 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4 text-purple-400" />
+              <h3 className="text-sm font-medium text-white">AI Suggestions</h3>
+              {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+            </div>
+
+            {/* Suggested Keywords */}
+            {aiSuggestions.keywords.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Suggested Keywords (click to add)</p>
+                <div className="flex flex-wrap gap-2">
+                  {aiSuggestions.keywords.slice(0, 15).map((kw, i) => {
+                    const isSelected = currentKeywords?.includes(kw.keyword)
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          if (!isSelected && (currentKeywords?.length || 0) < 5) {
+                            setValue("keywords", [...(currentKeywords || []), kw.keyword])
+                          }
+                        }}
+                        disabled={isSelected || (currentKeywords?.length || 0) >= 5}
+                        className={cn(
+                          "text-xs px-2 py-1 rounded border transition-all",
+                          isSelected
+                            ? "bg-green-500/10 border-green-500/20 text-green-400 cursor-not-allowed"
+                            : (currentKeywords?.length || 0) >= 5
+                            ? "bg-neutral-800 border-neutral-700 text-neutral-500 cursor-not-allowed"
+                            : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:border-white hover:text-white cursor-pointer"
+                        )}
+                      >
+                        {kw.keyword}
+                        {kw.searchVolume && (
+                          <span className="ml-1 text-[10px] text-neutral-500">({kw.searchVolume})</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Suggested Competitors */}
+            {aiSuggestions.competitors.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Suggested Competitors</p>
+                <div className="space-y-1">
+                  {aiSuggestions.competitors.slice(0, 5).map((comp, i) => (
+                    <div key={i} className="text-xs text-neutral-400 flex items-center justify-between p-2 rounded bg-neutral-800/50">
+                      <span>{comp.name}</span>
+                      {comp.reason && <span className="text-[10px] text-neutral-500 ml-2">{comp.reason}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Suggested Markets */}
+            {aiSuggestions.markets.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Market Opportunities</p>
+                <div className="space-y-1">
+                  {aiSuggestions.markets.slice(0, 3).map((market, i) => (
+                    <div key={i} className="text-xs text-neutral-400 p-2 rounded bg-neutral-800/50">
+                      <span className="font-medium text-white">{market.country}</span>
+                      {market.opportunity && (
+                        <span className="ml-2 text-neutral-500">- {market.opportunity}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Save App Profile Button */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              const formData = watch()
+              const profileId = savedProfileId || `app_${Date.now()}`
+              
+              // Get metadata from extracted data (if available)
+              const metadata: any = {}
+              if (appIosUrl || appAndroidUrl) {
+                try {
+                  const url = appIosUrl || appAndroidUrl
+                  const platform = appIosUrl ? "ios" : "android"
+                  const response = await fetch("/api/extract-app-data", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url, platform }),
+                  })
+                  if (response.ok) {
+                    const { data } = await response.json()
+                    metadata.icon = data.icon
+                    metadata.rating = data.rating
+                    metadata.reviews = data.reviews
+                    metadata.descriptionShort = data.subtitle
+                    metadata.descriptionLong = data.description
+                    metadata.screenshots = data.screenshots
+                    metadata.developer = data.developer
+                  }
+                } catch (error) {
+                  console.error("[ASOForm] Error fetching metadata:", error)
+                }
+              }
+
+              const profile: AppProfile = {
+                id: profileId,
+                platform: formData.platforms,
+                appStoreURL: formData.appUrls,
+                name: formData.appName,
+                appId: extractIdFromUrl(appIosUrl || appAndroidUrl || "", formData.platforms[0] || "ios"),
+                category: formData.category,
+                language: formData.language,
+                targetMarket: formData.country,
+                keywords: formData.keywords || [],
+                competitors: formData.competitors || [],
+                autoSuggestions: aiSuggestions ? {
+                  aiKeywords: aiSuggestions.keywords,
+                  aiCompetitors: aiSuggestions.competitors,
+                  aiMarkets: aiSuggestions.markets,
+                } : undefined,
+                metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+                createdAt: initialProfile?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                healthScore: undefined, // Will be calculated on save
+              }
+
+              // Calculate and set health score
+              profile.healthScore = calculateHealthScore(profile)
+              
+              saveAppProfile(profile)
+              setSavedProfileId(profileId)
+              
+              if (onProfileSaved) {
+                onProfileSaved(profileId)
+              }
+
+              alert("App profile saved successfully!")
+            }}
+            className="flex-1 rounded-lg border border-border bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-neutral-800 flex items-center justify-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {savedProfileId ? "Update Profile" : "Save App Profile"}
+          </button>
         </div>
 
         <div className="pt-2">

@@ -9,8 +9,9 @@ import { asoReportSchema, type ASOInput, type ASOReport } from "@/lib/schemas"
 import { AnimatePresence, motion } from "framer-motion"
 import { Loader2, AlertCircle, Clock } from "lucide-react"
 import { saveReportToHistory } from "@/lib/storage"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { getAppProfile, updateAppProfileLastReport, type AppProfile } from "@/lib/app-profile"
 
 const GENERATION_STAGES = [
   { 
@@ -59,7 +60,9 @@ export default function Page() {
   const [progress, setProgress] = useState(0)
   const [isEnriching, setIsEnriching] = useState(false)
   const [enrichedReport, setEnrichedReport] = useState<ASOReport | null>(null)
+  const [currentProfile, setCurrentProfile] = useState<AppProfile | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const stageIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -87,6 +90,17 @@ export default function Page() {
       }
     }
   }, [router])
+
+  // Load profile if profileId is in URL
+  useEffect(() => {
+    const profileId = searchParams?.get("profileId")
+    if (profileId) {
+      const profile = getAppProfile(profileId)
+      if (profile) {
+        setCurrentProfile(profile)
+      }
+    }
+  }, [searchParams])
 
   // Refresh session after auth callback to ensure cookies are set
   useEffect(() => {
@@ -268,7 +282,13 @@ export default function Page() {
               // Small delay to show 100% before switching
               setTimeout(() => {
                 setEnrichedReport(enriched)
-                saveReportToHistory(inputData, enriched)
+                const reportId = saveReportToHistory(inputData, enriched)
+                
+                // Update profile with last report info
+                if (currentProfile) {
+                  updateAppProfileLastReport(currentProfile.id, reportId)
+                }
+                
                 setIsEnriching(false)
               }, 500)
               return
@@ -284,12 +304,18 @@ export default function Page() {
         clearInterval(enrichmentProgressInterval)
         setEnrichedReport(object as any)
         setProgress(100)
-        saveReportToHistory(inputData, object as any)
+        const reportId = saveReportToHistory(inputData, object as any)
+        
+        // Update profile with last report info
+        if (currentProfile) {
+          updateAppProfileLastReport(currentProfile.id, reportId)
+        }
+        
         setIsEnriching(false)
       }
       enrichWithPexels()
     }
-  }, [object, inputData, isLoading, enrichedReport])
+  }, [object, inputData, isLoading, enrichedReport, currentProfile])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -345,7 +371,17 @@ export default function Page() {
         <AnimatePresence mode="wait">
           {!hasStarted ? (
             <motion.div key="form" exit={{ opacity: 0, y: -20 }} className="py-6 sm:py-12">
-              <ASOForm onSubmit={handleSubmit} isLoading={false} />
+              <ASOForm 
+                onSubmit={handleSubmit} 
+                isLoading={false}
+                initialProfile={currentProfile}
+                onProfileSaved={(profileId) => {
+                  const profile = getAppProfile(profileId)
+                  if (profile) {
+                    setCurrentProfile(profile)
+                  }
+                }}
+              />
             </motion.div>
           ) : (
             <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto">
