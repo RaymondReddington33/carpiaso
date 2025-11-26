@@ -579,7 +579,7 @@ You MUST generate the report following this exact structure with all 11 sections
 - The entire report must be written in English
 - All sections must be hyper-specific and actionable
 
-**REPORT LANGUAGE:** English (The entire report must be written in English).`
+**REPORT LANGUAGE:** English (The entire report must be written in English).
 
 ${appDataSection}
 

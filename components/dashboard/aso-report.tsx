@@ -419,12 +419,12 @@ export function ASOReportView({ data }: ASOReportViewProps) {
               </div>
             </div>
           ) : (
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
-          <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
-          Cultural Context and Local Data
-        </h2>
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <>
+              <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
+                Cultural Context and Local Data
+              </h2>
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <InsightCard
             title="Urban Mobility"
             content={data.culturalInsights?.urbanMobility}
@@ -729,9 +729,11 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 </div>
               </div>
             )}
-          </div>
-        )}
-      </section>
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {/* 3. Competitor Analysis */}
       {data.competitorAnalysis && data.competitorAnalysis.length > 0 && (
