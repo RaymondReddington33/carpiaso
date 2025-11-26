@@ -729,7 +729,6 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 </div>
               </div>
             )}
-              </div>
             </>
           )}
         </section>

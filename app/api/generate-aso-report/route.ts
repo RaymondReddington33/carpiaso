@@ -81,7 +81,7 @@ async function fetchAppStorePage(url: string): Promise<string> {
   }
 }
 
-async function extractAppStoreData(url: string, platform: "ios" | "android"): Promise<AppStoreData> {
+export async function extractAppStoreData(url: string, platform: "ios" | "android"): Promise<AppStoreData> {
   const data: AppStoreData = {
     title: "",
     description: "",
