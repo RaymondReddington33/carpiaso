@@ -9,23 +9,42 @@ import { useState, useEffect } from "react"
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
   const [user, setUser] = useState<any>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-    })
+    // Only create client if env vars are available (client-side only)
+    if (typeof window === 'undefined') return
+    
+    let supabase: ReturnType<typeof createClient> | null = null
+    
+    try {
+      supabase = createClient()
+      if (!supabase) return
+      
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        setUser(user)
+      }).catch((err) => {
+        console.warn('[Header] Error getting user:', err)
+      })
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-  }, [supabase])
+      supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null)
+      })
+    } catch (error) {
+      console.warn('[Header] Could not initialize Supabase client:', error)
+    }
+  }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push("/login")
+    } catch (error) {
+      console.error('[Header] Error during logout:', error)
+      router.push("/login")
+    }
   }
 
   return (
