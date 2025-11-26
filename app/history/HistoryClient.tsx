@@ -21,7 +21,7 @@ import {
   CheckSquare,
   Square,
   FileText,
-  X,
+  X as XIcon,
 } from "lucide-react"
 import { ASOReportView } from "@/components/dashboard/aso-report"
 import { format } from "date-fns"
@@ -288,7 +288,7 @@ export function HistoryClient() {
                       className="text-muted-foreground hover:text-white flex-shrink-0 p-1"
                       aria-label="Close"
                     >
-                      <X className="h-5 w-5" />
+                      <XIcon className="h-5 w-5" />
                     </button>
                   </div>
                   <ASOReportView data={previewItem.report} />
