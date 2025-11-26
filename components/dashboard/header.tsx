@@ -63,6 +63,12 @@ export function Header() {
           Generator
         </Link>
         <Link
+          href="/my-apps"
+          className={pathname === "/my-apps" ? "text-white hover:text-white" : "hover:text-white transition-colors"}
+        >
+          My Apps
+        </Link>
+        <Link
           href="/history"
           className={pathname === "/history" ? "text-white hover:text-white" : "hover:text-white transition-colors"}
         >
@@ -115,6 +121,13 @@ export function Header() {
                 className={`text-sm py-2 ${pathname === "/" ? "text-white font-medium" : "text-muted-foreground hover:text-white"}`}
               >
                 Generator
+              </Link>
+              <Link
+                href="/my-apps"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-sm py-2 ${pathname === "/my-apps" ? "text-white font-medium" : "text-muted-foreground hover:text-white"}`}
+              >
+                My Apps
               </Link>
               <Link
                 href="/history"
