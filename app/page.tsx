@@ -282,11 +282,11 @@ export default function Page() {
               // Small delay to show 100% before switching
               setTimeout(() => {
                 setEnrichedReport(enriched)
-                const reportId = saveReportToHistory(inputData, enriched)
+                const reportItem = saveReportToHistory(inputData, enriched)
                 
                 // Update profile with last report info
                 if (currentProfile) {
-                  updateAppProfileLastReport(currentProfile.id, reportId)
+                  updateAppProfileLastReport(currentProfile.id, reportItem.id)
                 }
                 
                 setIsEnriching(false)
@@ -304,11 +304,11 @@ export default function Page() {
         clearInterval(enrichmentProgressInterval)
         setEnrichedReport(object as any)
         setProgress(100)
-        const reportId = saveReportToHistory(inputData, object as any)
+        const reportItem = saveReportToHistory(inputData, object as any)
         
         // Update profile with last report info
         if (currentProfile) {
-          updateAppProfileLastReport(currentProfile.id, reportId)
+          updateAppProfileLastReport(currentProfile.id, reportItem.id)
         }
         
         setIsEnriching(false)
