@@ -1,7 +1,5 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect } from "react"
 import { Header } from "@/components/dashboard/header"
 import {
@@ -27,6 +25,10 @@ import {
 } from "lucide-react"
 import { ASOReportView } from "@/components/dashboard/aso-report"
 import { format } from "date-fns"
+
+// Force dynamic rendering to prevent build-time prerendering
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<ReportHistoryItem[]>([])
