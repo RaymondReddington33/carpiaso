@@ -250,21 +250,56 @@ export const benchmarkComparisonSchema = z.object({
   pexelsImageUrl: z.string().url().optional(), // Pexels image for context
 })
 
+// UL-ASO Engine Universal Schema - 11 Fixed Sections
 export const asoReportSchema = z.object({
-  hypothesis: z.array(hypothesisSchema),
-  culturalInsights: culturalInsightsSchema,
-  competitorAnalysis: z.array(competitorAnalysisSchema),
-  recommendations: z.array(recommendationSchema),
-  keywords: z.array(keywordSchema),
-  appColorPalette: paletteSchema.optional(), // Main app color palette extracted from screenshots
-  appVisualAssets: appVisualAssetsSchema.optional(), // App icon and screenshots
-  visualSummary: z.string().optional(), // Overall visual strategy summary
-  screenshotProposals: z.array(screenshotProposalSchema).optional(), // Detailed screenshot proposals
-  messageClusters: z.array(messageClusterSchema).optional(), // Message clusters for the market
-  localTerminology: z.array(localTerminologySchema).optional(), // Key local terminology
-  culturalElements: z.array(culturalElementSchema).optional(), // Important cultural elements
-  competitorInsights: z.array(competitorInsightSchema).optional(), // Detailed competitor insights
-  benchmarkComparisons: z.array(benchmarkComparisonSchema).optional(), // Benchmark comparisons
+  // 1. A/B Test Hypotheses
+  ab_hypotheses: z.string().describe("A/B testing hypotheses with specific variants and expected outcomes"),
+  
+  // 2. Cultural Insights (country + category)
+  cultural_insights: z.string().describe("Deep cultural insights adapted to both the country and app category"),
+  
+  // 3. Local Daily Life Moments
+  daily_life_moments: z.string().describe("Category-specific daily life moments for the target country"),
+  
+  // 4. Language, Tone & Local Expressions
+  language_tone: z.string().describe("Language characteristics, tone preferences, and local expressions for the category"),
+  
+  // 5. Seasonal Cues
+  seasonality: z.string().describe("Seasonal patterns, events, and timing relevant to the category and country"),
+  
+  // 6. City-Level Insights
+  cities: z.string().describe("Key cities with category-specific characteristics, locations, and cultural elements"),
+  
+  // 7. Local Competitor Analysis (same category)
+  competitors: z.string().describe("Analysis of top local competitors in the same category with their strategies"),
+  
+  // 8. Screenshot Recommendations (1-8)
+  screenshots: z.string().describe("Detailed screenshot recommendations (1-8) adapted to category and culture"),
+  
+  // 9. Localized UI & Visual Guidelines
+  visual_guidelines: z.string().describe("UI patterns, color palettes, typography, and visual guidelines for the country and category"),
+  
+  // 10. Copywriting Pack (10 headlines + 10 CTA)
+  copywriting_pack: z.string().describe("10 headlines and 10 CTAs adapted to the category, country, and cultural context"),
+  
+  // 11. Optimization Priorities
+  priorities: z.string().describe("Prioritized list of optimization actions based on category, market, and competitor analysis"),
+  
+  // Legacy fields for backward compatibility (optional)
+  hypothesis: z.array(hypothesisSchema).optional(),
+  culturalInsights: culturalInsightsSchema.optional(),
+  competitorAnalysis: z.array(competitorAnalysisSchema).optional(),
+  recommendations: z.array(recommendationSchema).optional(),
+  keywords: z.array(keywordSchema).optional(),
+  appColorPalette: paletteSchema.optional(),
+  appVisualAssets: appVisualAssetsSchema.optional(),
+  visualSummary: z.string().optional(),
+  screenshotProposals: z.array(screenshotProposalSchema).optional(),
+  messageClusters: z.array(messageClusterSchema).optional(),
+  localTerminology: z.array(localTerminologySchema).optional(),
+  culturalElements: z.array(culturalElementSchema).optional(),
+  competitorInsights: z.array(competitorInsightSchema).optional(),
+  benchmarkComparisons: z.array(benchmarkComparisonSchema).optional(),
   experimentRoadmap: z.array(
     z.object({
       name: z.string(),
@@ -274,7 +309,7 @@ export const asoReportSchema = z.object({
       duration: z.string(),
       expectedSampleSize: z.string(),
     })
-  ).optional(), // Roadmap of experiments to run
+  ).optional(),
 })
 
 export type ASOReport = z.infer<typeof asoReportSchema>

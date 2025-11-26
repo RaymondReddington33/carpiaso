@@ -342,16 +342,26 @@ export function ASOReportView({ data }: ASOReportViewProps) {
         </section>
       )}
 
-      {/* 1. Top Section: Hypotheses */}
-      <section>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
-            <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
-            Strategic A/B Testing Hypotheses
-          </h2>
-        </div>
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {data.hypothesis?.map((item, i) => (
+      {/* UL-ASO Engine: 1. A/B Test Hypotheses */}
+      {(data.ab_hypotheses || data.hypothesis?.length) && (
+        <section>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
+              <TestTube className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+              A/B Test Hypotheses
+            </h2>
+          </div>
+          {data.ab_hypotheses ? (
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+              <div className="prose prose-invert max-w-none">
+                <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                  {data.ab_hypotheses}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {data.hypothesis?.map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
@@ -387,13 +397,29 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 <p className="text-xs text-neutral-400 mt-1">{item.expectedOutcome}</p>
               </div>
             </motion.div>
-          ))}
-          {!data.hypothesis?.length && <SkeletonCard count={3} />}
-        </div>
-      </section>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
-      {/* 2. Cultural Insights Grid */}
-      <section>
+      {/* UL-ASO Engine: 2. Cultural Insights */}
+      {(data.cultural_insights || data.culturalInsights) && (
+        <section>
+          <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
+            Cultural Insights (Country + Category)
+          </h2>
+          {data.cultural_insights ? (
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+              <div className="prose prose-invert max-w-none">
+                <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                  {data.cultural_insights}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
           Cultural Context and Local Data
@@ -1246,6 +1272,9 @@ export function ASOReportView({ data }: ASOReportViewProps) {
           </div>
         </section>
       )}
+
+      {/* UL-ASO Engine: New 11-section format */}
+      {renderULASOSections(data)}
     </div>
   )
 }
@@ -1711,4 +1740,164 @@ function SkeletonCard({ count, className }: { count: number; className?: string 
       ))}
     </>
   )
+}
+
+// UL-ASO Engine: Render new 11-section format
+function renderULASOSections(data: Partial<ASOReport>) {
+  const sections = []
+  
+  // 3. Daily Life Moments
+  if (data.daily_life_moments) {
+    sections.push(
+      <section key="daily_life_moments">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500" />
+          Daily Life Moments
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.daily_life_moments}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 4. Language & Tone
+  if (data.language_tone) {
+    sections.push(
+      <section key="language_tone">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Languages className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
+          Language, Tone & Local Expressions
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.language_tone}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 5. Seasonality
+  if (data.seasonality) {
+    sections.push(
+      <section key="seasonality">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
+          Seasonality
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.seasonality}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 6. Cities
+  if (data.cities) {
+    sections.push(
+      <section key="cities">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />
+          City-Level Insights
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.cities}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 7. Competitors (new format)
+  if (data.competitors) {
+    sections.push(
+      <section key="competitors">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
+          Local Competitor Analysis
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.competitors}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 8. Screenshots (new format)
+  if (data.screenshots) {
+    sections.push(
+      <section key="screenshots">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500" />
+          Screenshot Recommendations (1-8)
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.screenshots}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 9. Visual Guidelines
+  if (data.visual_guidelines) {
+    sections.push(
+      <section key="visual_guidelines">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-500" />
+          Localized UI & Visual Guidelines
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.visual_guidelines}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 10. Copywriting Pack
+  if (data.copywriting_pack) {
+    sections.push(
+      <section key="copywriting_pack">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+          Copywriting Pack (10 Headlines + 10 CTAs)
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.copywriting_pack}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  // 11. Priorities
+  if (data.priorities) {
+    sections.push(
+      <section key="priorities">
+        <h2 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4 flex items-center gap-2">
+          <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
+          Optimization Priorities
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <div className="text-sm sm:text-base text-neutral-300 whitespace-pre-wrap leading-relaxed">
+            {data.priorities}
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  return sections
 }

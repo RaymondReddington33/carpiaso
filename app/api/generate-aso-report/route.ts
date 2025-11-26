@@ -342,63 +342,244 @@ ${comp.screenshots.map((url, i) => `  ${i + 1}. ${url}`).join("\n")}
 ${appVisualAssets.screenshots.map((url, i) => `  ${i + 1}. ${url}`).join("\n")}
 - URL Icono: ${appVisualAssets.iconUrl || "No disponible"}\n\n`
 
-    // Detect app niche/category automatically from app data
+    // Universal Category Detection System
     const appCategory = category.toLowerCase()
     const appDescription = (iosData?.description || androidData?.description || "").toLowerCase()
     const appTitle = (iosData?.title || androidData?.title || appName).toLowerCase()
+    const appFeatures = (iosData?.subtitle || "").toLowerCase()
     
-    // Auto-detect niche keywords
-    const nicheKeywords = {
-      parking: ["parking", "park", "aparcar", "parcheggio", "estacionamiento", "zona azul", "ztl"],
-      chess: ["chess", "ajedrez", "scacchi", "schach", "échecs", "game", "play"],
-      fitness: ["fitness", "workout", "exercise", "gym", "training", "health"],
-      food: ["food", "restaurant", "comida", "ristorante", "delivery", "order"],
-      travel: ["travel", "trip", "viaje", "viaggio", "hotel", "booking"],
-      finance: ["finance", "bank", "money", "payment", "wallet", "finanza"],
-      education: ["education", "learn", "study", "curso", "corso", "aprender"],
-      social: ["social", "chat", "message", "connect", "community"],
-      productivity: ["productivity", "task", "todo", "organize", "manage"],
-      music: ["music", "song", "audio", "playlist", "stream"],
-      photo: ["photo", "camera", "image", "picture", "edit"],
+    // Universal category mapping
+    const categoryMap: Record<string, string[]> = {
+      games: ["game", "play", "puzzle", "casino", "rpg", "strategy", "narrative", "kids", "hypercasual", "chess", "ajedrez", "scacchi", "schach", "échecs"],
+      fintech: ["finance", "bank", "money", "payment", "wallet", "crypto", "investment", "accounting", "finanza", "banca"],
+      travel: ["travel", "trip", "viaje", "viaggio", "hotel", "booking", "flight", "airport", "navigat"],
+      health: ["health", "fitness", "workout", "exercise", "gym", "training", "diet", "meditation", "sleep", "wellness"],
+      education: ["education", "learn", "study", "curso", "corso", "aprender", "school", "university", "course"],
+      social: ["social", "chat", "message", "connect", "community", "dating", "meet"],
+      productivity: ["productivity", "task", "todo", "organize", "manage", "calendar", "notes", "email"],
+      music: ["music", "song", "audio", "playlist", "stream", "radio", "podcast"],
+      photo: ["photo", "camera", "image", "picture", "edit", "gallery", "filter"],
+      shopping: ["shopping", "marketplace", "retail", "coupon", "buy", "purchase", "store"],
+      food: ["food", "restaurant", "comida", "ristorante", "delivery", "order", "recipe", "cooking"],
+      mobility: ["parking", "park", "aparcar", "parcheggio", "estacionamiento", "zona azul", "ztl", "mobility", "transport", "scooter", "car"],
+      ai: ["ai", "chatbot", "assistant", "gpt", "artificial intelligence", "machine learning"],
+      kids: ["kids", "children", "child", "toy", "learning game", "storybook"],
+      business: ["business", "crm", "erp", "meeting", "saas", "enterprise", "b2b"],
+      utilities: ["utility", "vpn", "cleaner", "battery", "file manager", "tool"],
     }
     
-    let detectedNiche = "general"
-    let nicheContext = ""
-    
-    for (const [niche, keywords] of Object.entries(nicheKeywords)) {
-      if (keywords.some(kw => appTitle.includes(kw) || appDescription.includes(kw) || appCategory.includes(kw))) {
-        detectedNiche = niche
+    // Detect category
+    let detectedCategory = category.toLowerCase()
+    for (const [cat, keywords] of Object.entries(categoryMap)) {
+      if (keywords.some(kw => 
+        appTitle.includes(kw) || 
+        appDescription.includes(kw) || 
+        appFeatures.includes(kw) || 
+        appCategory.includes(kw)
+      )) {
+        detectedCategory = cat
         break
       }
     }
     
-    // Generate niche-specific context
-    switch (detectedNiche) {
-      case "chess":
-        nicheContext = "This is a CHESS GAME application. Focus on chess-related terminology, chess pieces, chess boards, tournaments, strategies, and chess culture. Cities should be adapted to chess culture (famous chess clubs, tournaments, chess cafes). Local objects should be chess-related (chess sets, clocks, boards). Cultural elements should relate to chess traditions and events."
-        break
-      case "parking":
-        nicheContext = "This is a PARKING/MOBILITY application. Focus on parking zones, traffic regulations, urban mobility, parking signs, and transportation. Cities should include famous streets and parking areas. Local objects should be transportation-related (scooters, cars, parking meters)."
-        break
-      case "fitness":
-        nicheContext = "This is a FITNESS/HEALTH application. Focus on gyms, workouts, exercises, health trends, and fitness culture. Cities should include famous gyms and fitness centers. Local objects should be fitness-related (weights, yoga mats, running paths)."
-        break
-      case "food":
-        nicheContext = "This is a FOOD/RESTAURANT application. Focus on local cuisine, restaurants, food delivery, and culinary culture. Cities should include famous restaurants and food markets. Local objects should be food-related (dishes, ingredients, cooking tools)."
-        break
-      default:
-        nicheContext = `This is a ${category.toUpperCase()} application. Adapt all cultural insights, cities, local objects, and terminology to be relevant to this specific category and niche.`
+    // If category is still generic, try to infer from category field
+    if (detectedCategory === category.toLowerCase() && category.toLowerCase() !== "general") {
+      // Map common category names to our system
+      const categoryAliases: Record<string, string> = {
+        "games": "games",
+        "entertainment": "games",
+        "finance": "fintech",
+        "travel": "travel",
+        "health & fitness": "health",
+        "medical": "health",
+        "education": "education",
+        "social networking": "social",
+        "productivity": "productivity",
+        "music": "music",
+        "photo & video": "photo",
+        "shopping": "shopping",
+        "food & drink": "food",
+        "navigation": "mobility",
+        "utilities": "utilities",
+        "business": "business",
+        "lifestyle": "health",
+      }
+      detectedCategory = categoryAliases[category.toLowerCase()] || detectedCategory
     }
 
-    const prompt = `
-You are a SENIOR ASO (App Store Optimization) consultant with 15+ years of experience generating ULTRA-DETAILED, PROFESSIONAL strategic reports to maximize the CVR (Conversion Rate) of the app "${appName}" on ${platforms.join(" and ")} in the ${country} market.
+    // UL-ASO Engine System Prompt
+    const systemPrompt = `You are the Universal Localized ASO Intelligence Engine (UL-ASO Engine).
 
-**REPORT LANGUAGE:** English (The entire report must be written in English).
+Your mission is to generate hyper-localized ASO reports for any app in the world, regardless of its category, country, language, or vertical.
 
-**NICHE DETECTION:**
-${nicheContext}
+**CORE RULES:**
 
-**CRITICAL INSTRUCTION:** ALL sections (Cultural Context, Cities, Language, Local Objects, etc.) MUST be automatically adapted to the app's niche (${detectedNiche}). Do NOT use generic examples. If the app is about chess, talk about chess-related places, objects, and culture. If it's about fitness, focus on fitness-related elements. Adapt EVERYTHING to the specific niche.
+1. **AUTOMATIC CATEGORY DETECTION**
+   Given the app name, description, and features, determine its true category:
+   - Games (casual, midcore, puzzle, casino, kids, narrative...)
+   - Fintech / Finance
+   - Travel
+   - Health & Wellness
+   - Fitness
+   - Education
+   - Social
+   - Messaging
+   - Photography
+   - Tools / Utilities
+   - Productivity
+   - AI / Chatbot
+   - Music / Audio
+   - Video
+   - Shopping / Retail
+   - Food / Delivery
+   - Transport / Mobility
+   - B2B
+   - Professional SaaS
+   - News
+   - Home / Smart Home
+   - Kids
+   - And any other category
+
+2. **DEEP CULTURALIZATION**
+   Adapt recommendations to:
+   - Local lifestyle
+   - Daily routines
+   - Usual schedules
+   - Cultural sensitivities
+   - Visual norms
+   - Recognizable iconography
+   - Real urban landscapes
+   - Local signage
+   - Colors and aesthetics compatible with culture
+   - Seasonality
+   - Climate
+   - Country events
+   - Specific regulations (if applicable)
+   - Relevant cities
+
+3. **CATEGORY-ADAPTED SCREENSHOT RECOMMENDATIONS**
+   Each category has its own DOs/DON'Ts. Adjust:
+   - Image type
+   - Visual style
+   - Characters (if applicable)
+   - Real or conceptual UI
+   - Claims
+   - Design
+   - Icons
+   - Expected emotions
+   - Hierarchy
+
+4. **ULTRA-LOCAL LANGUAGE AND TONE**
+   Generate:
+   - Real expressions
+   - Common phrases
+   - Country's preferred tone
+   - Formal vs informal level
+   - Claims that connect emotionally
+   - CTAs used by similar apps in that market
+
+5. **LOCAL COMPETITOR ANALYSIS (SAME CATEGORY + COUNTRY)**
+   Analyze:
+   - Top apps in the country in that category
+   - Common claims
+   - Visual patterns
+   - Palettes
+   - Cultural concepts
+   - Strong promises
+   - Repeated benefits
+   - Trust elements
+
+6. **LOCALIZED UI PATTERNS**
+   Include:
+   - Recommended palettes
+   - Culturally preferred typographies
+   - Visual emotions
+   - Country's habitual composition
+
+7. **ALWAYS DELIVER THE REPORT IN 11 FIXED SECTIONS:**
+   1. A/B Test Hypotheses
+   2. Cultural Insights (country + category)
+   3. Daily Life Moments
+   4. Language & Tone
+   5. Seasonality
+   6. Key Cities
+   7. Local Competition
+   8. Recommended Screenshots (1-8)
+   9. Visual & Localized UI
+   10. Copywriting Pack (10 headlines + 10 CTAs)
+   11. Optimization Priorities
+
+8. **EVERYTHING MUST BE:**
+   - Hyper-specific
+   - No generic content
+   - Adapted to category
+   - Adapted to culture
+   - Based on real market behavior`
+
+    const prompt = `${systemPrompt}
+
+**APP DATA:**
+- Name: ${appName}
+- Category: ${detectedCategory}
+- Description: ${iosData?.description || androidData?.description || "Not provided"}
+- Key Features: ${iosData?.subtitle || androidData?.subtitle || "Not provided"}
+- Screenshots Goal: Maximize CVR in ${country} market
+- Audience: ${language}-speaking users in ${country}
+
+**LOCALIZATION DATA:**
+- Country: ${country}
+- Language: ${language}
+- Priority Cities: Automatically identify main cities relevant to this category
+- Season: Current season and seasonal patterns for ${country}
+- Cultural Nuances: Deep cultural insights for ${country} and ${detectedCategory} category
+
+${appDataSection}
+
+${appAssetsSection}
+
+${competitorSection}
+
+**TARGET KEYWORDS:** ${keywords?.length > 0 ? keywords.join(", ") : "Automatically identify the best local keywords based on the category and market."}
+
+**OUTPUT FORMAT (MANDATORY - 11 SECTIONS):**
+
+You MUST generate the report following this exact structure with all 11 sections:
+
+1. **ab_hypotheses** (string): A/B testing hypotheses with specific variants and expected outcomes. Include at least 5-7 detailed hypotheses with control vs test variants, KPIs, and expected impact.
+
+2. **cultural_insights** (string): Deep cultural insights adapted to both the country (${country}) and app category (${detectedCategory}). Include lifestyle patterns, visual preferences, cultural sensitivities, local behaviors, and how they relate to ASO.
+
+3. **daily_life_moments** (string): Category-specific daily life moments for the target country. For ${detectedCategory} apps in ${country}, describe when and where users interact with this type of app. Include specific times, locations, contexts, and emotional states.
+
+4. **language_tone** (string): Language characteristics, tone preferences, and local expressions for the category. Include formal/informal preferences, common phrases, cultural expressions, and how to address users in ${language} for ${detectedCategory} apps.
+
+5. **seasonality** (string): Seasonal patterns, events, and timing relevant to the category and country. Include seasonal behaviors, events, holidays, and how they affect app usage and ASO strategy.
+
+6. **cities** (string): Key cities with category-specific characteristics, locations, and cultural elements. For ${detectedCategory} apps, identify the most relevant cities in ${country} and describe category-specific locations, landmarks, and cultural elements in each city.
+
+7. **competitors** (string): Analysis of top local competitors in the same category. Analyze their strategies, claims, visual patterns, color palettes, messaging, and identify gaps and opportunities.
+
+8. **screenshots** (string): Detailed screenshot recommendations (1-8) adapted to category and culture. For each screenshot, specify: position (S1=hero, S2=functional, etc.), visual content with local elements, UI content, copy in ${language}, and A/B test variants.
+
+9. **visual_guidelines** (string): UI patterns, color palettes, typography, and visual guidelines for the country and category. Include recommended color palettes with RGB/HEX values, typography preferences, visual composition, iconography, and cultural visual norms.
+
+10. **copywriting_pack** (string): 10 headlines and 10 CTAs adapted to the category, country, and cultural context. All copy must be in ${language} and adapted to ${detectedCategory} apps. Include emotional triggers, cultural references, and local expressions.
+
+11. **priorities** (string): Prioritized list of optimization actions based on category, market, and competitor analysis. Rank actions by impact and feasibility, with specific implementation steps.
+
+**CRITICAL REQUIREMENTS:**
+- ALL content must be adapted to ${detectedCategory} category - NO generic examples
+- ALL content must be adapted to ${country} culture and ${language} language
+- Use REAL data from provided app and competitor information
+- Generate MINIMUM 50-100 keywords and long-tail keywords
+- Include MINIMUM 15-20 Pexels image query suggestions
+- Provide SPECIFIC, REALISTIC recommendations (not generic)
+- Think like a SENIOR ASO consultant with 15+ years of experience
+- Quality and depth over speed - generate a comprehensive, professional report
+- The entire report must be written in English
+- All sections must be hyper-specific and actionable
+
+**REPORT LANGUAGE:** English (The entire report must be written in English).`
 
 ${appDataSection}
 
