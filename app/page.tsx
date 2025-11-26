@@ -372,89 +372,80 @@ export default function Page() {
                 )}
               </div>
 
-              {/* Progress Bar */}
+              {/* Progress Bar - Compact Version */}
               {(isLoading || isEnriching || (object && !enrichedReport)) && (
-                <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-6 rounded-xl border border-border bg-card p-4 sm:p-6 md:p-8">
-                  {/* Status Message */}
-                  <div className="text-center space-y-2">
-                    <h3 className="text-lg sm:text-xl font-semibold text-white px-2">
-                      {isEnriching 
-                        ? "Enriching Report with Visual Data"
-                        : GENERATION_STAGES[currentStage]?.message || "Generating Report..."}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-2xl mx-auto px-2">
-                      {isEnriching 
-                        ? "Adding contextual images from Pexels and finalizing local data integration"
-                        : GENERATION_STAGES[currentStage]?.description || "Processing your request..."}
-                    </p>
-                  </div>
-
-                  {/* Progress Bar with Countdown */}
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs sm:text-sm">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
-                        <span className="text-neutral-300">
-                          Elapsed: <span className="font-mono font-semibold text-white">{formatTime(elapsedTime)}</span>
-                        </span>
+                <div className="mb-4 sm:mb-6 rounded-lg border border-border bg-card p-3 sm:p-4">
+                  {/* Compact Header */}
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="flex h-1.5 w-1.5 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
                       </div>
-                      {getEstimatedTimeRemaining() && (
-                        <span className="text-neutral-400">
-                          Remaining: <span className="font-mono font-semibold text-green-400">{getEstimatedTimeRemaining()}</span>
-                        </span>
-                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm sm:text-base font-semibold text-white truncate">
+                          {isEnriching 
+                            ? "Enriching Report with Visual Data"
+                            : GENERATION_STAGES[currentStage]?.message || "Generating Report..."}
+                        </h3>
+                        <p className="text-xs text-neutral-400 truncate">
+                          {isEnriching 
+                            ? "Adding contextual images from Pexels..."
+                            : GENERATION_STAGES[currentStage]?.description || "Processing..."}
+                        </p>
+                      </div>
                     </div>
-                    
-                    {/* Progress Bar */}
-                    <div className="relative h-5 w-full rounded-full bg-neutral-900 overflow-hidden border border-neutral-800 shadow-inner">
-                      <motion.div
-                        className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                          progress < 25 
-                            ? "bg-gradient-to-r from-green-400 via-green-500 to-green-500"
-                            : progress < 50
-                            ? "bg-gradient-to-r from-green-500 via-green-500 to-green-600"
-                            : progress < 75
-                            ? "bg-gradient-to-r from-green-500 via-green-600 to-green-500"
-                            : progress < 95
-                            ? "bg-gradient-to-r from-green-500 via-green-400 to-green-500"
-                            : "bg-gradient-to-r from-green-400 via-green-300 to-green-200"
-                        }`}
-                        initial={{ width: "0%" }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                      />
+                    <div className="flex items-center gap-3 flex-shrink-0 text-xs">
+                      <div className="flex items-center gap-1.5 text-neutral-400">
+                        <Clock className="h-3.5 w-3.5 text-green-400" />
+                        <span className="font-mono text-white">{formatTime(elapsedTime)}</span>
+                      </div>
                       {progress >= 5 && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-sm font-bold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-                            {Math.round(progress)}%
-                          </span>
-                        </div>
+                        <span className="font-semibold text-green-400">{Math.round(progress)}%</span>
                       )}
                     </div>
                   </div>
 
-                  {/* Stage Indicator */}
+                  {/* Compact Progress Bar */}
+                  <div className="relative h-2 w-full rounded-full bg-neutral-900 overflow-hidden border border-neutral-800">
+                    <motion.div
+                      className={`absolute left-0 top-0 h-full rounded-full transition-all ${
+                        progress < 25 
+                          ? "bg-gradient-to-r from-green-400 via-green-500 to-green-500"
+                          : progress < 50
+                          ? "bg-gradient-to-r from-green-500 via-green-500 to-green-600"
+                          : progress < 75
+                          ? "bg-gradient-to-r from-green-500 via-green-600 to-green-500"
+                          : progress < 95
+                          ? "bg-gradient-to-r from-green-500 via-green-400 to-green-500"
+                          : "bg-gradient-to-r from-green-400 via-green-300 to-green-200"
+                      }`}
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
+
+                  {/* Compact Stage Indicator */}
                   {!isEnriching && (
-                    <div className="pt-6 border-t border-border">
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        <div className="flex gap-1.5">
-                          {GENERATION_STAGES.map((stage, idx) => (
-                            <div
-                              key={idx}
-                              className={`h-2 rounded-full transition-all ${
-                                idx < currentStage
-                                  ? "bg-green-500 w-10"
-                                  : idx === currentStage
-                                  ? "bg-green-400 w-10 animate-pulse"
-                                  : "bg-neutral-800 w-6"
-                              }`}
-                            />
-                          ))}
-                        </div>
+                    <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-border">
+                      <div className="flex gap-1">
+                        {GENERATION_STAGES.map((stage, idx) => (
+                          <div
+                            key={idx}
+                            className={`h-1.5 rounded-full transition-all ${
+                              idx < currentStage
+                                ? "bg-green-500 w-6"
+                                : idx === currentStage
+                                ? "bg-green-400 w-6 animate-pulse"
+                                : "bg-neutral-800 w-3"
+                            }`}
+                          />
+                        ))}
                       </div>
-                      <p className="text-center text-xs text-neutral-500">
-                        Step {currentStage + 1} of {GENERATION_STAGES.length}
-                      </p>
+                      <span className="text-[10px] text-neutral-500 ml-1">
+                        {currentStage + 1}/{GENERATION_STAGES.length}
+                      </span>
                     </div>
                   )}
                 </div>

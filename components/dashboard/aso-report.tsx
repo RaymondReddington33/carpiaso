@@ -874,8 +874,11 @@ export function ASOReportView({ data }: ASOReportViewProps) {
                 )}
 
                 {rec.colorPalette && (
-                  <div>
-                    <ColorPaletteDisplay palette={rec.colorPalette} />
+                  <div className="mb-4">
+                    <ColorPaletteDisplay 
+                      palette={rec.colorPalette} 
+                      isIconRecommendation={rec.title?.toLowerCase().includes('icon') || rec.insight?.toLowerCase().includes('icon')}
+                    />
                   </div>
                 )}
 
@@ -1247,28 +1250,44 @@ export function ASOReportView({ data }: ASOReportViewProps) {
   )
 }
 
-function ColorPaletteDisplay({ palette }: { palette: any }) {
+function ColorPaletteDisplay({ palette, isIconRecommendation = false }: { palette: any; isIconRecommendation?: boolean }) {
+  if (!palette || !palette.colors || palette.colors.length === 0) return null
+  
   return (
-    <div className="rounded-lg border border-border bg-neutral-900/30 p-4">
+    <div className={`rounded-lg border ${isIconRecommendation ? 'border-purple-500/50 bg-purple-500/10' : 'border-border bg-neutral-900/30'} p-4 sm:p-5`}>
       <div className="flex items-center gap-2 mb-3">
-        <Palette className="h-4 w-4 text-purple-400" />
-        <h4 className="text-xs font-semibold text-white">{palette.name}</h4>
+        <Palette className={`h-4 w-4 ${isIconRecommendation ? 'text-purple-400' : 'text-purple-400'}`} />
+        <h4 className={`text-xs sm:text-sm font-semibold ${isIconRecommendation ? 'text-purple-300' : 'text-white'}`}>
+          {palette.name || (isIconRecommendation ? 'Icon Color Palette' : 'Color Palette')}
+        </h4>
+        {isIconRecommendation && (
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            Icon Design
+          </span>
+        )}
       </div>
       {palette.description && (
-        <p className="text-xs text-muted-foreground mb-3">{palette.description}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed">{palette.description}</p>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-        {palette.colors?.map((color: any, idx: number) => (
-          <div key={idx} className="space-y-2">
+      <div className={`grid ${palette.colors.length <= 3 ? 'grid-cols-3' : palette.colors.length <= 5 ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6'} gap-3 sm:gap-4`}>
+        {palette.colors.map((color: any, idx: number) => (
+          <div key={idx} className="space-y-2 sm:space-y-3">
             <div
-              className="w-full h-16 rounded-lg border border-border/50"
+              className="w-full h-20 sm:h-24 rounded-lg border-2 border-white/10 shadow-lg transition-transform hover:scale-105"
               style={{ backgroundColor: color.hex || color.rgb }}
+              title={`${color.hex || color.rgb} - ${color.usage || 'Color'}`}
             />
             <div className="space-y-1">
-              <p className="text-[10px] font-mono text-neutral-400">{color.hex}</p>
-              <p className="text-[10px] font-mono text-neutral-500">{color.rgb}</p>
+              <p className="text-[10px] sm:text-xs font-mono font-semibold text-white bg-black/30 px-1.5 py-0.5 rounded">
+                {color.hex || 'N/A'}
+              </p>
+              <p className="text-[9px] sm:text-[10px] font-mono text-neutral-400">
+                {color.rgb || 'N/A'}
+              </p>
               {color.usage && (
-                <p className="text-[10px] text-muted-foreground mt-1">{color.usage}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1.5 leading-tight">
+                  {color.usage}
+                </p>
               )}
             </div>
           </div>

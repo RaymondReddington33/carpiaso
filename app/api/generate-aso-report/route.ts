@@ -342,10 +342,63 @@ ${comp.screenshots.map((url, i) => `  ${i + 1}. ${url}`).join("\n")}
 ${appVisualAssets.screenshots.map((url, i) => `  ${i + 1}. ${url}`).join("\n")}
 - URL Icono: ${appVisualAssets.iconUrl || "No disponible"}\n\n`
 
+    // Detect app niche/category automatically from app data
+    const appCategory = category.toLowerCase()
+    const appDescription = (iosData?.description || androidData?.description || "").toLowerCase()
+    const appTitle = (iosData?.title || androidData?.title || appName).toLowerCase()
+    
+    // Auto-detect niche keywords
+    const nicheKeywords = {
+      parking: ["parking", "park", "aparcar", "parcheggio", "estacionamiento", "zona azul", "ztl"],
+      chess: ["chess", "ajedrez", "scacchi", "schach", "échecs", "game", "play"],
+      fitness: ["fitness", "workout", "exercise", "gym", "training", "health"],
+      food: ["food", "restaurant", "comida", "ristorante", "delivery", "order"],
+      travel: ["travel", "trip", "viaje", "viaggio", "hotel", "booking"],
+      finance: ["finance", "bank", "money", "payment", "wallet", "finanza"],
+      education: ["education", "learn", "study", "curso", "corso", "aprender"],
+      social: ["social", "chat", "message", "connect", "community"],
+      productivity: ["productivity", "task", "todo", "organize", "manage"],
+      music: ["music", "song", "audio", "playlist", "stream"],
+      photo: ["photo", "camera", "image", "picture", "edit"],
+    }
+    
+    let detectedNiche = "general"
+    let nicheContext = ""
+    
+    for (const [niche, keywords] of Object.entries(nicheKeywords)) {
+      if (keywords.some(kw => appTitle.includes(kw) || appDescription.includes(kw) || appCategory.includes(kw))) {
+        detectedNiche = niche
+        break
+      }
+    }
+    
+    // Generate niche-specific context
+    switch (detectedNiche) {
+      case "chess":
+        nicheContext = "This is a CHESS GAME application. Focus on chess-related terminology, chess pieces, chess boards, tournaments, strategies, and chess culture. Cities should be adapted to chess culture (famous chess clubs, tournaments, chess cafes). Local objects should be chess-related (chess sets, clocks, boards). Cultural elements should relate to chess traditions and events."
+        break
+      case "parking":
+        nicheContext = "This is a PARKING/MOBILITY application. Focus on parking zones, traffic regulations, urban mobility, parking signs, and transportation. Cities should include famous streets and parking areas. Local objects should be transportation-related (scooters, cars, parking meters)."
+        break
+      case "fitness":
+        nicheContext = "This is a FITNESS/HEALTH application. Focus on gyms, workouts, exercises, health trends, and fitness culture. Cities should include famous gyms and fitness centers. Local objects should be fitness-related (weights, yoga mats, running paths)."
+        break
+      case "food":
+        nicheContext = "This is a FOOD/RESTAURANT application. Focus on local cuisine, restaurants, food delivery, and culinary culture. Cities should include famous restaurants and food markets. Local objects should be food-related (dishes, ingredients, cooking tools)."
+        break
+      default:
+        nicheContext = `This is a ${category.toUpperCase()} application. Adapt all cultural insights, cities, local objects, and terminology to be relevant to this specific category and niche.`
+    }
+
     const prompt = `
-You are an expert ASO (App Store Optimization) consultant generating a detailed strategic report to maximize the CVR (Conversion Rate) of the app "${appName}" on ${platforms.join(" and ")} in the ${country} market.
+You are a SENIOR ASO (App Store Optimization) consultant with 15+ years of experience generating ULTRA-DETAILED, PROFESSIONAL strategic reports to maximize the CVR (Conversion Rate) of the app "${appName}" on ${platforms.join(" and ")} in the ${country} market.
 
 **REPORT LANGUAGE:** English (The entire report must be written in English).
+
+**NICHE DETECTION:**
+${nicheContext}
+
+**CRITICAL INSTRUCTION:** ALL sections (Cultural Context, Cities, Language, Local Objects, etc.) MUST be automatically adapted to the app's niche (${detectedNiche}). Do NOT use generic examples. If the app is about chess, talk about chess-related places, objects, and culture. If it's about fitness, focus on fitness-related elements. Adapt EVERYTHING to the specific niche.
 
 ${appDataSection}
 
@@ -353,7 +406,20 @@ ${appAssetsSection}
 
 ${competitorSection}
 
-**PARAULES CLAU OBJECTIU:** ${keywords?.length > 0 ? keywords.join(", ") : "Identifica automàticament les millors paraules clau locals basant-te en la categoria i el mercat."}
+**TARGET KEYWORDS:** ${keywords?.length > 0 ? keywords.join(", ") : "Automatically identify the best local keywords based on the category, niche, and market."}
+
+**KEYWORD GENERATION REQUIREMENTS:**
+- Generate MINIMUM 50-100 keywords and long-tail keywords
+- Include niche-specific keywords (e.g., for chess: "chess openings", "chess tactics", "chess tournament [city]")
+- Include location-based keywords (e.g., "[niche term] [city]", "[niche term] [famous location]")
+- Include long-tail keywords (3-5 words) with lower competition
+- Include keyword variations in local language
+- For each keyword category, provide:
+  * Primary keywords (high volume, high competition)
+  * Long-tail keywords (lower volume, lower competition)
+  * Local variations (city-specific, region-specific)
+  * Niche-specific combinations
+- Estimate search volume and competition level for each
 
 **URLs DE LES APPS:**
 ${appUrls.ios ? `- iOS: ${appUrls.ios}` : ""}
@@ -363,20 +429,26 @@ ${appUrls.android ? `- Android: ${appUrls.android}` : ""}
 
 1. **UTILITZA LES DADES REALS EXTRETES**: Totes les dades proporcionades són REALS. HAS D'UTILITZAR aquestes dades reals, NO inventis dades.
 
-2. **ANÀLISI PROFUNDA DE SCREENSHOTS I COLORS**: 
-   - Analitza CADA screenshot proporcionat per extreure colors RGB/HEX reals
-   - Identifica la paleta de colors dominant de l'app (mínim 3-5 colors principals amb valors RGB i HEX)
-   - Identifica paletes de colors dels competidors per comparació
-   - Per cada color, indica on s'utilitza (fons, botons, text, etc.)
-   - Inclou URLs de screenshots reals a les hipòtesis i recomanacions quan sigui rellevant
+2. **DEEP ANALYSIS OF SCREENSHOTS AND COLORS**: 
+   - Analyze EVERY screenshot provided to extract REAL RGB/HEX color values
+   - Identify the dominant color palette of the app (MINIMUM 5-8 primary colors with RGB and HEX values)
+   - Identify competitor color palettes for comparison
+   - For each color, specify where it's used (background, buttons, text, accents, etc.)
+   - Include screenshot URLs in hypotheses and recommendations when relevant
+   - Extract color psychology insights (what emotions each color evokes in the ${country} market)
+   - Provide color accessibility recommendations (contrast ratios, WCAG compliance)
+   - Suggest color palette improvements based on competitor analysis
 
-3. **DADES LOCALS ULTRA-ESPECÍFIQUES AMB CITES I ENLLAÇOS**:
-   Per al mercat de ${country}, HAS DE proporcionar dades MOLT ESPECÍFIQUES:
+3. **ULTRA-SPECIFIC LOCAL DATA WITH CITATIONS AND LINKS**:
+   For the ${country} market, you MUST provide VERY SPECIFIC data ADAPTED TO THE APP'S NICHE (${detectedNiche}):
    
-   **A. Terminologia Local Autòctona:**
-   - Llista TOTES les paraules/frases locals relacionades amb aparcament i mobilitat
-   - Exemples: "ZTL", "Area C", "strisce blu", "carico/scarico", "permesso residenti", "varco", etc.
-   - Per cada terme: significat, context d'ús, i rellevància ASO
+   **A. Niche-Specific Local Terminology:**
+   - List ALL local words/phrases related to the app's niche (${detectedNiche})
+   - For chess apps: chess terminology in local language, chess club names, tournament terms
+   - For parking apps: parking zones, traffic regulations, mobility terms
+   - For fitness apps: gym terminology, exercise names, fitness culture terms
+   - For each term: meaning, context of use, and ASO relevance
+   - Include niche-specific slang and colloquialisms
    
    **B. Carrers, Zones i Punt de Referència Específics:**
    - Noms de carrers reals i famosos (ex: "Via del Corso", "Piazza Duomo", "Gran Vía")
@@ -412,14 +484,18 @@ ${appUrls.android ? `- Android: ${appUrls.android}` : ""}
    - Format de preus local (ex: "1.234,56 €" per Europa, "$1,234.56" per USA)
    - Com mostrar preus a l'app (format específic)
    
-   **H. CIUTATS ESPECÍFIQUES I LLURS CARACTERÍSTIQUES:**
-   HAS DE llistar les principals ciutats del país amb:
-   - Nom EXACTE de cada ciutat (ex: "Madrid", "Barcelona", "Milano", "Roma")
-   - Característiques específiques de cada ciutat
-   - Carrers famosos de cada ciutat (ex: "Gran Vía", "Passeig de Gràcia", "Via del Corso")
-   - Monuments i punt de referència específics (ex: "Plaza Mayor", "Sagrada Família", "Colosseo")
-   - Objectes locals específics de cada ciutat
-   - Utilitza aquests noms EXACTES a les recomanacions
+   **H. NICHE-SPECIFIC CITIES AND THEIR CHARACTERISTICS:**
+   You MUST list the main cities of the country ADAPTED TO THE APP'S NICHE:
+   - Exact name of each city (e.g., "Madrid", "Barcelona", "Milano", "Roma")
+   - Niche-specific characteristics of each city:
+     * For chess: Famous chess clubs, chess tournaments, chess cafes, chess museums
+     * For parking: Famous parking areas, traffic zones, mobility hubs
+     * For fitness: Famous gyms, fitness centers, running paths, sports facilities
+     * For food: Famous restaurants, food markets, culinary districts
+   - Niche-relevant famous locations in each city (NOT generic tourist spots unless relevant)
+   - Niche-specific local objects for each city
+   - Use these EXACT names in recommendations
+   - ONLY include cities and locations relevant to the app's niche
    
    **I. CARACTERÍSTIQUES ESPECÍFIQUES DE L'IDIOMA:**
    - Formes de tractament formals (ex: "Usted", "Lei", "Sie")
@@ -429,12 +505,14 @@ ${appUrls.android ? `- Android: ${appUrls.android}` : ""}
    - Tono preferit (formal, casual, amigable)
    - Exemples concrets de com parlar a l'usuari
    
-   **J. OBJECTES LOCALS ESPECÍFICS:**
-   - Llista d'objectes específics del país relacionats amb mobilitat/aparcament
-   - Per cada objecte: nom exacte, descripció, significat cultural
-   - Exemples: "Vespa scooter", "furgoneta bianca", "tram giallo", "microcar", "bicicleta eléctrica"
-   - Per què són rellevants per a l'ASO
-   - Suggeriments de cerques d'imatges de Pexels per a cada objecte
+   **J. NICHE-SPECIFIC LOCAL OBJECTS:**
+   - List objects specific to the country RELATED TO THE APP'S NICHE (${detectedNiche})
+   - For chess: chess sets, chess clocks, chess boards, tournament equipment
+   - For parking: scooters, cars, parking meters, traffic signs
+   - For fitness: gym equipment, yoga mats, running gear, fitness trackers
+   - For each object: exact name, description, cultural significance
+   - Why they are relevant for ASO
+   - Pexels image search suggestions for each object (niche-specific queries)
    
    **K. LLEIS I REGULACIONS ESPECÍFIQUES:**
    - Nom EXACTE de cada llei/normativa (ex: "Delibera Area C Milano", "Ordenanza de Movilidad Sostenible Madrid")
@@ -489,31 +567,37 @@ ${appUrls.android ? `- Android: ${appUrls.android}` : ""}
      * Variant B vs Control: què canvia específicament
      * KPI objectiu del test (CVR global, CVR només store search, etc.)
 
-5. **RECOMANACIONS ACCIONABLES I ENRIQUIDES AMB CONTEXT VISUAL LOCAL**:
-   Proposa recomanacions molt precises i concretes per a creativitats (screenshots, icona) i copywriting (títol, subtítol, descripció). Inclou:
-   - **DETALLS D'IMPLEMENTACIÓ AMB ELEMENTS LOCALS REALS**: 
-     * Especifica com implementar cada recomanació amb elements locals ESPECÍFICS
-     * Exemple: "Utilitzar una foto d'un parking de Plaza Mayor de Madrid amb senyal de zona azul visible i preu en euros"
-     * Exemple: "Afegir un cartell de zona blava de Barcelona en català amb el preu del parking"
-     * Exemple: "Mostrar un carrer específic com Gran Vía de Madrid amb senyal vertical de zona azul"
-     * Exemple: "Si la screenshot mostra un parking, ha de ser un parking ESPECÍFIC de la ciutat (ex: Parking Plaza Mayor Madrid)"
-     * Exemple: "Si mostra un carrer, ha de ser un carrer ESPECÍFIC (ex: Carrer Gran Vía Madrid, Passeig de Gràcia Barcelona)"
-     * Exemple: "Afegir senyals locals reals: zona azul/blava, ZTL, preus en euros, idioma local"
+5. **ACTIONABLE RECOMMENDATIONS ENRICHED WITH NICHE-SPECIFIC VISUAL CONTEXT**:
+   Propose very precise and concrete recommendations for creatives (screenshots, icon) and copywriting (title, subtitle, description). Include:
+   - **ICON RECOMMENDATIONS WITH VISIBLE COLOR PALETTES**:
+     * Provide SPECIFIC, REALISTIC icon design recommendations
+     * Include a VISIBLE color palette with RGB and HEX values for the icon
+     * Specify icon style (flat, 3D, gradient, outline, etc.)
+     * Recommend specific visual elements for the icon (niche-appropriate)
+     * Provide 3-5 icon design variations with different color palettes
+     * Each palette must be displayed with color swatches (RGB, HEX values)
+     * Explain why each palette works for the ${country} market and niche
+     * Compare with competitor icon palettes
+   
+   - **IMPLEMENTATION DETAILS WITH NICHE-SPECIFIC LOCAL ELEMENTS**: 
+     * Specify how to implement each recommendation with niche-specific local elements
+     * For chess apps: "Use a photo of a chess tournament at [famous chess club] in [city]"
+     * For parking apps: "Use a photo of parking at [famous location] with [local parking sign]"
+     * For fitness apps: "Show [famous gym] in [city] with [local fitness equipment]"
+     * Adapt ALL examples to the app's niche - NO generic examples
    
    - **ENLLAÇOS PER APROFUNDIR**: Quan recomanis dades o conceptes locals, inclou enllaços a articles, estudis o webs oficials que donin suport a la recomanació.
    
-   - **SUGGERIMENTS DE CERCA PEXELS ESPECÍFICS I CONTEXTUALS**:
-     * Per a cada recomanació que inclogui un element visual local, HAS DE suggerir una query ESPECÍFICA de Pexels
-     * Les queries han de ser ESPECÍFIQUES del lloc/element mencionat:
-       - Si recomanes alguna cosa de "zona azul": "Pexels Query: 'zona azul madrid parking sign'"
-       - Si recomanes alguna cosa de "Plaza Catalunya Barcelona": "Pexels Query: 'plaza catalunya barcelona parking'"
-       - Si recomanes alguna cosa de "zona blava": "Pexels Query: 'zona blava barcelona parking sign catalan'"
-       - Si recomanes alguna cosa de "ZTL Roma": "Pexels Query: 'ztl zone rome traffic sign'"
-       - Si recomanes un carrer específic: "Pexels Query: 'gran via madrid parking street'"
-       - Si recomanes un monument: "Pexels Query: 'sagrada familia barcelona parking'"
-     * Les imatges de Pexels han de servir per DONAR CONTEXT a la recomanació
-     * Si la recomanació menciona un lloc específic, la imatge de Pexels ha de ser d'aquest lloc específic
-     * Utilitza el camp pexelsQuerySuggestion per a cada recomanació
+   - **NICHE-SPECIFIC PEXELS SEARCH SUGGESTIONS**:
+     * For each recommendation that includes a visual element, you MUST suggest a SPECIFIC Pexels query
+     * Queries MUST be niche-specific and location-specific:
+       - For chess apps: "Pexels Query: 'chess tournament [city] [country]'", "chess club [city]", "chess board [local style]"
+       - For parking apps: "Pexels Query: 'parking [location] [city]'", "traffic sign [city] [country]"
+       - For fitness apps: "Pexels Query: 'gym [city] [country]'", "fitness [location] [city]"
+     * Pexels images must serve to PROVIDE CONTEXT to the recommendation
+     * If the recommendation mentions a specific location, the Pexels image must be of that specific location
+     * Use the pexelsQuerySuggestion field for each recommendation
+     * Generate MINIMUM 10-15 Pexels image suggestions throughout the report to support design proposals
 
 6. **CLUSTERS DE MISSATGERIA LOCALS**:
    HAS DE crear clusters de missatgeria específics per al mercat:
@@ -705,29 +789,30 @@ L'informe ha de seguir estrictament l'esquema JSON proporcionat i incloure:
     - screenshots: Array amb totes les URLs de screenshots reals
     - platforms: Plataformes (ios, android)
 
-13. **Paraules Clau LOCALS I ESPECÍFIQUES**:
-   HAS DE generar paraules clau ULTRA-ESPECÍFIQUES I LOCALS relacionades amb la temàtica de l'app:
+13. **NICHE-SPECIFIC KEYWORDS AND LONG-TAIL KEYWORDS**:
+   You MUST generate ULTRA-SPECIFIC AND LOCAL keywords related to the app's niche (${detectedNiche}):
    
-   **EXEMPLES PER APPS DE PARKING:**
-   - "aparcar en [CIUTAT]" (ex: "aparcar en madrid", "aparcar en barcelona", "aparcar en milano")
-   - "aparcar en [CARRER ESPECÍFIC]" (ex: "aparcar en plaza mayor", "aparcar en calle alcala", "aparcar en via del corso")
-   - "parking [ZONA ESPECÍFICA]" (ex: "parking zona azul madrid", "parking zona blava barcelona", "parking ztl roma")
-   - "aparcament [MONUMENT/LOCALITZACIÓ]" (ex: "aparcament sagrada família", "aparcament colosseo", "aparcament duomo milano")
-   - "zona [TIPUS] [CIUTAT]" (ex: "zona azul madrid", "zona blava barcelona", "zona residenti roma")
-   - "preu parking [CIUTAT]" (ex: "preu parking barcelona", "precio parking madrid")
-   - "app aparcament [CIUTAT]" (ex: "app aparcament barcelona", "app parcheggio milano")
+   **KEYWORD GENERATION RULES:**
+   - Generate MINIMUM 50-100 keywords across multiple categories
+   - Include niche-specific keywords (e.g., for chess: "chess openings", "chess tactics", "chess puzzle")
+   - Include location-based keywords: "[niche term] [city]", "[niche term] [famous location]"
+   - Include long-tail keywords (3-5 words): "[niche term] [location] [action]", "[niche term] [benefit] [location]"
+   - Include local language variations (Catalan for Barcelona, Spanish for Madrid, Italian for Italy, etc.)
+   - Include competitor brand names + niche terms
+   - Include question-based keywords: "how to [niche action]", "best [niche term] [location]"
+   - Include comparison keywords: "[niche term] vs [competitor]", "best [niche term] app"
    
-   **REGLES:**
-   - Totes les paraules clau han de ser ESPECÍFIQUES del país/ciutat
-   - Inclou noms reals de carrers, places, monuments, zones
-   - Combina la temàtica de l'app amb ubicacions locals reals
-   - Per cada paraula clau, indica el volum de cerca estimat i el nivell de competència
-   - Inclou variacions en l'idioma local (català per Barcelona, castellà per Madrid, italià per Itàlia, etc.)
-   - category: Categoria de la paraula clau
-   - terms: Array de paraules clau específiques i locals
-   - searchVolume: Volum de cerca estimat
-   - competition: Nivell de competència
-   - localVariations: Variacions locals de les paraules clau
+   **EXAMPLES BY NICHE:**
+   - Chess: "chess game [city]", "chess tournament [location]", "learn chess [city]", "chess tactics [language]"
+   - Parking: "parking [city]", "parking [famous street]", "parking zone [city]", "parking app [city]"
+   - Fitness: "gym [city]", "workout [location]", "fitness [city]", "exercise app [country]"
+   
+   **FOR EACH KEYWORD CATEGORY:**
+   - category: Category name (e.g., "Primary Keywords", "Long-tail Keywords", "Location-based", "Niche-specific")
+   - terms: Array of 10-20 specific and local keywords
+   - searchVolume: Estimated search volume (High/Medium/Low)
+   - competition: Competition level (High/Medium/Low)
+   - localVariations: Local language variations of keywords
 
 6. **Paleta de Colors de l'App**:
    - appColorPalette: Paleta principal extreta dels screenshots amb colors RGB/HEX reals
@@ -745,13 +830,38 @@ Busca i cita dades reals com:
 - Tendències de consum locals
 - Comportaments específics del país/ciutat
 
-**IMPORTANT FINAL**: 
-- NO inventis dades. Utilitza només dades reals o indica clarament quan no estan disponibles.
-- Totes les URLs de screenshots han de ser reals i accessibles.
-- Tots els colors han de tenir valors RGB i HEX reals extrets de les imatges.
-- Tots els enllaços han de ser URLs vàlides i rellevants.
+**REPORT LENGTH AND DEPTH REQUIREMENTS:**
+- This report MUST be EXTREMELY COMPREHENSIVE, DETAILED, AND PROFESSIONAL
+- Generate MINIMUM 8-12 detailed recommendations (not just 5)
+- Generate MINIMUM 8-10 detailed screenshot proposals (not just 6)
+- Generate MINIMUM 5-7 A/B testing hypotheses (not just 3)
+- Generate MINIMUM 50-100 keywords across multiple categories
+- Include MINIMUM 15-20 Pexels image suggestions throughout the report
+- Each section must be THOROUGHLY detailed with specific, actionable insights
+- Use MORE tokens if needed - quality and depth are more important than token count
+- Think like a SENIOR ASO consultant with 15+ years of experience
+- Provide enterprise-level strategic insights, not generic recommendations
+
+**ICON RECOMMENDATIONS - CRITICAL:**
+- When recommending icon changes, you MUST provide:
+  * VISIBLE color palettes with RGB and HEX values displayed clearly
+  * 3-5 icon design variations with different color schemes
+  * Specific, realistic design elements (not generic suggestions)
+  * Comparison with competitor icons
+  * Explanation of why each palette works for the niche and market
+  * Accessibility considerations (contrast, visibility)
+  * Cultural appropriateness for ${country}
+
+**FINAL CRITICAL INSTRUCTIONS:**
+- DO NOT invent data. Use only real data or clearly indicate when unavailable.
+- All screenshot URLs must be real and accessible.
+- All colors must have REAL RGB and HEX values extracted from images.
+- All links must be valid and relevant URLs.
 - The report must be completely written in English.
-- The report must be professional, visual, intuitive and actionable.
+- The report must be PROFESSIONAL, VISUAL, INTUITIVE, ACTIONABLE, and COMPREHENSIVE.
+- ADAPT ALL SECTIONS to the app's niche (${detectedNiche}) - NO generic content.
+- Generate a MUCH LONGER, MORE DETAILED report than typical - this is a premium, senior-level analysis.
+- Quality over speed - take your time to generate the best possible report.
 `
 
     console.log("[ASO] Generating report with real data for:", appName, country, language)
@@ -801,7 +911,8 @@ Busca i cita dades reals com:
       model: openaiProvider("gpt-4o"),
       schema: asoReportSchema,
       messages: messages,
-      maxSteps: 5,
+      maxSteps: 15, // Increased from 5 to 15 for more detailed, professional reports
+      temperature: 0.7, // Slightly higher for more creative but still professional output
     })
 
     console.log("[ASO] Streaming response...")
