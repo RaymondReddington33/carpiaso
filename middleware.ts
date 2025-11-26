@@ -37,46 +37,50 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    // Refresh the session to ensure cookies are up to date
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    // Always allow access to login and auth callback pages
+    // Always allow access to login and auth callback pages first
     if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth')) {
-      // If user is logged in and tries to access login, redirect to home
+      // For auth callback, always allow and let it handle the redirect
+      if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+        return supabaseResponse
+      }
+      
+      // Check if user is logged in and trying to access login
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      
       if (user && request.nextUrl.pathname === '/login') {
         const redirectUrl = request.nextUrl.clone()
         redirectUrl.pathname = '/'
         redirectUrl.search = '' // Clean any error params
         return NextResponse.redirect(redirectUrl)
       }
-      // For auth callback, always allow and let it handle the redirect
-      // Don't check auth here as cookies might not be set yet
-      if (request.nextUrl.pathname.startsWith('/auth/callback')) {
-        return supabaseResponse
-      }
+      
       // Otherwise, allow access to login/auth pages
       return supabaseResponse
     }
 
-    // Protect all other routes - require authentication
-    if (!user) {
-      // Only redirect if we're not coming from the auth callback
-      // Check if there's a code parameter (might be a redirect from callback)
-      const code = request.nextUrl.searchParams.get('code')
-      if (!code) {
-        const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = '/login'
-        redirectUrl.search = '' // Clean any error params from protected routes
-        return NextResponse.redirect(redirectUrl)
-      }
+    // For protected routes, use getUser() which automatically refreshes the session
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    // If there's an auth error or no user, redirect to login
+    if (authError || !user) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      redirectUrl.search = '' // Clean any error params from protected routes
+      return NextResponse.redirect(redirectUrl)
     }
+
+    // User is authenticated, allow access
+    return supabaseResponse
   } catch (error) {
-    // If auth check fails, allow request to proceed (useful for build time)
+    // If auth check fails, log but don't redirect to avoid loops
     console.warn('[Middleware] Auth check failed:', error)
-    // Don't redirect on error to avoid loops - let the page handle it
+    // Allow request to proceed - let the page handle authentication
+    return supabaseResponse
   }
 
   return supabaseResponse

@@ -53,21 +53,28 @@ export async function GET(request: NextRequest) {
             setAll(cookiesToSet) {
               try {
                 cookiesToSet.forEach(({ name, value, options }) => {
+                  // Determine domain - use parent domain to work with both www and non-www
+                  const hostname = requestUrl.hostname
+                  let domain: string | undefined = undefined
+                  
+                  // Only set domain for production
+                  if (process.env.NODE_ENV === 'production' && hostname.includes('carpiaso.com')) {
+                    // Use parent domain so cookies work for both www and non-www
+                    domain = '.carpiaso.com'
+                  }
+                  
+                  const cookieOptions = {
+                    ...options,
+                    sameSite: 'lax' as const,
+                    httpOnly: options?.httpOnly ?? true,
+                    secure: options?.secure ?? process.env.NODE_ENV === 'production',
+                    ...(domain && { domain }),
+                  }
+                  
                   // Set cookie in cookieStore
-                  cookieStore.set(name, value, {
-                    ...options,
-                    // Ensure cookies work across www and non-www
-                    sameSite: 'lax' as const,
-                    httpOnly: options?.httpOnly ?? true,
-                    secure: options?.secure ?? process.env.NODE_ENV === 'production',
-                  })
+                  cookieStore.set(name, value, cookieOptions)
                   // Also set in response
-                  response.cookies.set(name, value, {
-                    ...options,
-                    sameSite: 'lax' as const,
-                    httpOnly: options?.httpOnly ?? true,
-                    secure: options?.secure ?? process.env.NODE_ENV === 'production',
-                  })
+                  response.cookies.set(name, value, cookieOptions)
                 })
                 console.log('[Auth Callback] Cookies set:', cookiesToSet.map(c => c.name))
               } catch (err) {

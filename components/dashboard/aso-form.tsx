@@ -88,34 +88,6 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
     }
   }, [appIosUrl, appAndroidUrl, showIos, showAndroid, setValue, appName]) // Removed appName from dependency to allow overwrite
 
-  // Watch all competitor URLs to auto-generate names
-  const competitors = watch("competitors")
-  
-  useEffect(() => {
-    if (!competitors || competitors.length === 0) return
-    
-    competitors.forEach((comp, index) => {
-      if (!comp) return
-      
-      const compIosUrl = comp.iosUrl || ""
-      const compAndroidUrl = comp.androidUrl || ""
-      const compName = comp.name || ""
-
-      let id = ""
-      // Check iOS URL first if it exists
-      if (compIosUrl) {
-        id = extractIdFromUrl(compIosUrl, "ios")
-      } 
-      // If no iOS URL or no ID found, check Android URL
-      if (!id && compAndroidUrl) {
-        id = extractIdFromUrl(compAndroidUrl, "android")
-      }
-
-      if (id && id !== compName) {
-        setValue(`competitors.${index}.name`, id, { shouldValidate: false })
-      }
-    })
-  }, [competitors, setValue])
 
   const handleAddKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -388,6 +360,24 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
             const compAndroidUrl = watch(`competitors.${index}.androidUrl`)
             const compName = watch(`competitors.${index}.name`)
 
+            // Auto-generate name for this specific competitor when URLs change
+            useEffect(() => {
+              let id = ""
+              // Check iOS URL first if it exists and iOS is selected
+              if (showIos && compIosUrl) {
+                id = extractIdFromUrl(compIosUrl, "ios")
+              } 
+              // If no iOS URL or no ID found, check Android URL
+              if (!id && showAndroid && compAndroidUrl) {
+                id = extractIdFromUrl(compAndroidUrl, "android")
+              }
+
+              // Auto-generate name if we have an ID and it's different from current name
+              if (id && id !== compName) {
+                setValue(`competitors.${index}.name`, id, { shouldValidate: false })
+              }
+            }, [compIosUrl, compAndroidUrl, showIos, showAndroid, compName, index, setValue])
+
             return (
               <div key={field.id} className="space-y-2 p-3 rounded-lg border border-border bg-background/50">
                 <div className="flex items-center gap-2 mb-2">
@@ -402,6 +392,7 @@ export function ASOForm({ onSubmit, isLoading }: ASOFormProps) {
                     {compName && (
                       <div className="absolute right-3 top-2.5 flex items-center gap-1 text-[10px] text-green-400">
                         <Sparkles className="h-3 w-3" />
+                        <span>Auto-detected</span>
                       </div>
                     )}
                   </div>
