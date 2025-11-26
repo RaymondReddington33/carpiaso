@@ -21,8 +21,11 @@ export async function GET(req: NextRequest) {
         })
       }
     } catch (dbError: any) {
-      // Table might not exist - continue to Pexels fallback
-      console.log("[API] Supabase table may not exist, using Pexels fallback")
+      // Table might not exist or other error - continue to Pexels fallback
+      // Only log if it's not a "relation does not exist" error
+      if (!dbError?.message?.includes('relation') && !dbError?.message?.includes('does not exist')) {
+        console.warn("[API] Supabase error (non-critical):", dbError?.message)
+      }
     }
 
     // If not in database, try to fetch from Pexels (fallback)

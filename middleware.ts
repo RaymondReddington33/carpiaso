@@ -50,6 +50,10 @@ export async function middleware(request: NextRequest) {
         redirectUrl.search = '' // Clean any error params
         return NextResponse.redirect(redirectUrl)
       }
+      // For auth callback, always allow and let it handle the redirect
+      if (request.nextUrl.pathname.startsWith('/auth/callback')) {
+        return supabaseResponse
+      }
       // Otherwise, allow access to login/auth pages
       return supabaseResponse
     }

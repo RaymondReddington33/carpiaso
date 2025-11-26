@@ -42,10 +42,13 @@ export default function LoginPage() {
         // Try to get video from Supabase first (no API key needed)
         const response = await fetch("/api/get-aquarium-video")
         if (response.ok) {
-          const data = await response.json()
-          if (data.url) {
-            setVideoUrl(data.url)
-            return
+          const contentType = response.headers.get("content-type")
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json()
+            if (data.url) {
+              setVideoUrl(data.url)
+              return
+            }
           }
         }
 
@@ -54,14 +57,18 @@ export default function LoginPage() {
         if (pexelsApiKey) {
           const fallbackResponse = await fetch(`/api/get-aquarium-video?apiKey=${encodeURIComponent(pexelsApiKey)}`)
           if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json()
-            if (fallbackData.url) {
-              setVideoUrl(fallbackData.url)
+            const contentType = fallbackResponse.headers.get("content-type")
+            if (contentType && contentType.includes("application/json")) {
+              const fallbackData = await fallbackResponse.json()
+              if (fallbackData.url) {
+                setVideoUrl(fallbackData.url)
+              }
             }
           }
         }
       } catch (error) {
-        console.error("[Login] Error fetching aquarium video:", error)
+        // Silently fail - video is optional
+        console.warn("[Login] Could not load aquarium video (optional feature):", error)
       }
     }
 
