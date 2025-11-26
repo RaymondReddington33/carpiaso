@@ -108,7 +108,7 @@ export default function LoginPage() {
       console.log('[Login] Using redirect URL:', redirectUrl)
       console.log('[Login] Current hostname:', window.location.hostname)
       
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error, data } = await supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: redirectUrl,
@@ -116,7 +116,18 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setMessage({ type: "error", text: error.message })
+        // Handle specific error cases
+        let errorMessage = error.message
+        
+        if (error.status === 429 || error.message?.includes('Too Many Requests')) {
+          errorMessage = "Too many requests. Please wait a few minutes before requesting another magic link."
+        } else if (error.message?.includes('rate limit') || error.message?.includes('rate_limit')) {
+          errorMessage = "Rate limit exceeded. Please wait a few minutes and try again."
+        } else if (error.message?.includes('email')) {
+          errorMessage = "Invalid email address. Please check and try again."
+        }
+        
+        setMessage({ type: "error", text: errorMessage })
       } else {
         setMessage({
           type: "success",
@@ -124,7 +135,15 @@ export default function LoginPage() {
         })
       }
     } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "An error occurred" })
+      let errorMessage = "An error occurred. Please try again."
+      
+      if (error?.status === 429 || error?.message?.includes('Too Many Requests')) {
+        errorMessage = "Too many requests. Please wait a few minutes before requesting another magic link."
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      setMessage({ type: "error", text: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -208,7 +227,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !email.trim()}
               className="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-all hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (

@@ -37,8 +37,10 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
+    // Refresh the session to ensure cookies are up to date
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser()
 
     // Always allow access to login and auth callback pages
@@ -51,6 +53,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(redirectUrl)
       }
       // For auth callback, always allow and let it handle the redirect
+      // Don't check auth here as cookies might not be set yet
       if (request.nextUrl.pathname.startsWith('/auth/callback')) {
         return supabaseResponse
       }
@@ -60,10 +63,15 @@ export async function middleware(request: NextRequest) {
 
     // Protect all other routes - require authentication
     if (!user) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/login'
-      redirectUrl.search = '' // Clean any error params from protected routes
-      return NextResponse.redirect(redirectUrl)
+      // Only redirect if we're not coming from the auth callback
+      // Check if there's a code parameter (might be a redirect from callback)
+      const code = request.nextUrl.searchParams.get('code')
+      if (!code) {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/login'
+        redirectUrl.search = '' // Clean any error params from protected routes
+        return NextResponse.redirect(redirectUrl)
+      }
     }
   } catch (error) {
     // If auth check fails, allow request to proceed (useful for build time)

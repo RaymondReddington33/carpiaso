@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Loader2, AlertCircle, Clock } from "lucide-react"
 import { saveReportToHistory } from "@/lib/storage"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 const GENERATION_STAGES = [
   { 
@@ -86,6 +87,27 @@ export default function Page() {
       }
     }
   }, [router])
+
+  // Refresh session after auth callback to ensure cookies are set
+  useEffect(() => {
+    const refreshSession = async () => {
+      try {
+        const supabase = createClient()
+        // This will refresh the session and ensure cookies are properly set
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.warn('[Page] Session refresh error:', error)
+        } else if (session) {
+          console.log('[Page] Session refreshed successfully')
+        }
+      } catch (err) {
+        console.warn('[Page] Could not refresh session:', err)
+      }
+    }
+    
+    // Only refresh once on mount
+    refreshSession()
+  }, [])
   
   const { object, submit, isLoading, error } = useObject({
     api: "/api/generate-aso-report",

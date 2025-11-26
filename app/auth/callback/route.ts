@@ -38,8 +38,9 @@ export async function GET(request: NextRequest) {
         throw new Error('Missing Supabase environment variables')
       }
 
-      // Create a response object to handle cookies
-      const response = NextResponse.redirect(`${origin}/`)
+      // Create a response object to handle cookies - redirect to home
+      const redirectUrl = new URL(`${origin}/`)
+      const response = NextResponse.redirect(redirectUrl.toString())
       
       const supabase = createServerClient(
         supabaseUrl,
@@ -52,11 +53,24 @@ export async function GET(request: NextRequest) {
             setAll(cookiesToSet) {
               try {
                 cookiesToSet.forEach(({ name, value, options }) => {
-                  cookieStore.set(name, value, options)
-                  response.cookies.set(name, value, options)
+                  // Set cookie in cookieStore
+                  cookieStore.set(name, value, {
+                    ...options,
+                    // Ensure cookies work across www and non-www
+                    sameSite: 'lax' as const,
+                    httpOnly: options?.httpOnly ?? true,
+                    secure: options?.secure ?? process.env.NODE_ENV === 'production',
+                  })
+                  // Also set in response
+                  response.cookies.set(name, value, {
+                    ...options,
+                    sameSite: 'lax' as const,
+                    httpOnly: options?.httpOnly ?? true,
+                    secure: options?.secure ?? process.env.NODE_ENV === 'production',
+                  })
                 })
+                console.log('[Auth Callback] Cookies set:', cookiesToSet.map(c => c.name))
               } catch (err) {
-                // Ignore if called from Server Component
                 console.warn('[Auth Callback] Cookie set warning:', err)
               }
             },
@@ -64,19 +78,31 @@ export async function GET(request: NextRequest) {
         }
       )
 
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+      console.log('[Auth Callback] Exchanging code for session...')
+      const { error: exchangeError, data: exchangeData } = await supabase.auth.exchangeCodeForSession(code)
       
       if (exchangeError) {
         console.error('[Auth Callback] Error exchanging code:', exchangeError)
         // Redirect to login with error
         const loginUrl = new URL(`${origin}/login`)
         loginUrl.searchParams.set('error', 'exchange_failed')
-        loginUrl.searchParams.set('message', 'Failed to complete sign in. Please try again.')
+        loginUrl.searchParams.set('message', exchangeError.message || 'Failed to complete sign in. Please try again.')
         return NextResponse.redirect(loginUrl.toString())
       }
 
-      // Verify the session was created
-      const { data: { user } } = await supabase.auth.getUser()
+      console.log('[Auth Callback] Code exchanged successfully, verifying session...')
+
+      // Verify the session was created by checking the user
+      const { data: { user }, error: getUserError } = await supabase.auth.getUser()
+      
+      if (getUserError) {
+        console.error('[Auth Callback] Error getting user:', getUserError)
+        const loginUrl = new URL(`${origin}/login`)
+        loginUrl.searchParams.set('error', 'session_failed')
+        loginUrl.searchParams.set('message', 'Session could not be verified. Please try again.')
+        return NextResponse.redirect(loginUrl.toString())
+      }
+
       if (!user) {
         console.error('[Auth Callback] No user after exchange')
         const loginUrl = new URL(`${origin}/login`)
@@ -86,6 +112,7 @@ export async function GET(request: NextRequest) {
       }
 
       console.log('[Auth Callback] Successfully authenticated user:', user.email)
+      console.log('[Auth Callback] Redirecting to home with cookies...')
       
       // Return the response with cookies set
       return response
